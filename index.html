@@ -10,27 +10,26 @@
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#f3f4f6;color:#1f2937;display:flex}
-.sidebar{width:260px;background:#1f2937;min-height:100vh;padding:25px 20px}
+body{font-family:'Segoe UI',Tahoma;background:#f3f4f6;display:flex;color:#1f2937}
+.sidebar{width:260px;background:#1f2937;padding:25px 20px;min-height:100vh}
 .sidebar h2{color:#84cc16;text-align:center;margin-bottom:30px}
 .menu-item{padding:14px 18px;border-radius:10px;margin-bottom:12px;color:#d1d5db;font-weight:600;cursor:pointer}
 .menu-item.active{background:#84cc16;color:#1f2937}
 .content{flex:1;padding:30px}
 .container{max-width:1600px;margin:auto}
 header{background:linear-gradient(135deg,#1f2937,#374151);padding:30px;border-radius:14px;margin-bottom:14px}
-header h1{color:#84cc16;font-size:32px}
+header h1{color:#84cc16}
 .subtitle{color:#d1d5db;margin-top:6px}
 .filter-bar{margin:10px 0 18px 0}
-.filter-bar select{padding:10px 14px;border-radius:10px;border:2px solid #e5e7eb;font-size:14px;font-weight:600;min-width:220px}
+select{padding:10px 14px;border-radius:10px;border:2px solid #e5e7eb;font-weight:600}
 .kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
 .kpi-card{background:#fff;border:2px solid #e5e7eb;border-radius:12px;padding:16px}
 .kpi-card.highlight{border-left:4px solid #84cc16}
 .kpi-card.warning{border-left:4px solid #f59e0b}
-.kpi-label{font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase}
+.kpi-label{font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase}
 .kpi-value{font-size:22px;font-weight:700}
-.kpi-value.highlight{color:#84cc16}
 .kpi-subvalue{font-size:11px;color:#9ca3af}
-.charts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px}
+.charts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px}
 .chart-box{background:#fff;border:2px solid #e5e7eb;border-radius:14px;padding:14px}
 </style>
 </head>
@@ -39,112 +38,150 @@ header h1{color:#84cc16;font-size:32px}
 
 <aside class="sidebar">
 <h2>Traxion</h2>
-<div class="menu-item active" id="menu-km">🚛 Kilómetros</div>
-<div class="menu-item" id="menu-flota">🚗 Flota Vehicular</div>
-<div class="menu-item" id="menu-dif">📊 Diferencia km Cargas vs GPS</div>
+<div class="menu-item active" onclick="show('km')">🚛 Kilómetros</div>
+<div class="menu-item" onclick="show('dif')">📊 Diferencia km Cargas vs GPS</div>
+<div class="menu-item" onclick="show('flota')">🚗 Flota Vehicular</div>
 </aside>
 
-<main class="content"><div class="container">
+<main class="content">
+<div class="container">
 
 <!-- ================= KILOMETROS ================= -->
-<section id="view-kilometros">
+<section id="km">
 <header>
 <h1>Dashboard de Kilómetros Recorridos</h1>
-<p class="subtitle" id="headerPeriodo"></p>
+<p class="subtitle" id="periodoKm"></p>
 </header>
 
 <div class="filter-bar">
-<select id="unidadNegocio">
-<option value="SETTEPI SALTILLO">SETTEPI SALTILLO</option>
-<option value="LIPU SALTILLO">LIPU SALTILLO</option>
-</select>
+<select id="udnKm"></select>
 </div>
 
 <div class="kpi-grid">
-<div class="kpi-card highlight"><div class="kpi-label">TOTAL KM</div><div class="kpi-value highlight" id="kpiTotal">0</div><div class="kpi-subvalue">Acumulado</div></div>
-<div class="kpi-card"><div class="kpi-label">KM PERMITIDOS</div><div class="kpi-value" id="kpiPermitido">0</div></div>
-<div class="kpi-card highlight"><div class="kpi-label">MARGEN</div><div class="kpi-value highlight" id="kpiMargen">0</div><div class="kpi-subvalue"></div></div>
-<div class="kpi-card"><div class="kpi-label">SERVICIO</div><div class="kpi-value" id="kpiServicio">0</div><div class="kpi-subvalue" id="pctServicio"></div></div>
-<div class="kpi-card"><div class="kpi-label">MTTO</div><div class="kpi-value" id="kpiMtto">0</div><div class="kpi-subvalue" id="pctMtto"></div></div>
-<div class="kpi-card warning"><div class="kpi-label">VACÍO</div><div class="kpi-value" id="kpiVacio">0</div><div class="kpi-subvalue" id="pctVacio"></div></div>
+<div class="kpi-card highlight"><div class="kpi-label">Total KM</div><div class="kpi-value" id="kmTotal">0</div></div>
+<div class="kpi-card"><div class="kpi-label">Permitidos</div><div class="kpi-value" id="kmPermitido">0</div></div>
+<div class="kpi-card highlight"><div class="kpi-label">Margen</div><div class="kpi-value" id="kmMargen">0</div><div class="kpi-subvalue" id="kmMargenPct"></div></div>
+<div class="kpi-card"><div class="kpi-label">Servicio</div><div class="kpi-value" id="kmServicio">0</div></div>
+<div class="kpi-card"><div class="kpi-label">MTTO</div><div class="kpi-value" id="kmMtto">0</div></div>
+<div class="kpi-card warning"><div class="kpi-label">Vacío</div><div class="kpi-value" id="kmVacio">0</div></div>
 </div>
 
-<div class="charts-grid">
-<div class="chart-box"><canvas id="chartDistribucion"></canvas></div>
-<div class="chart-box"><canvas id="chartPermitido"></canvas></div>
-<div class="chart-box"><canvas id="chartEficiencia"></canvas></div>
+<div class="charts">
+<div class="chart-box"><canvas id="c1"></canvas></div>
+<div class="chart-box"><canvas id="c2"></canvas></div>
+<div class="chart-box"><canvas id="c3"></canvas></div>
 </div>
 </section>
 
 <!-- ================= DIFERENCIA ================= -->
-<section id="view-dif" style="display:none">
+<section id="dif" style="display:none">
 <header>
 <h1>Diferencia KM Cargas vs GPS</h1>
-<p class="subtitle" id="headerPeriodoDif"></p>
+<p class="subtitle" id="periodoDif"></p>
 </header>
 
 <div class="filter-bar">
-<select id="unidadNegocioDif"></select>
+<select id="udnDif"></select>
 </div>
 
 <div class="kpi-grid">
-<div class="kpi-card highlight"><div class="kpi-label">TOTAL KM GPS</div><div class="kpi-value highlight" id="kpiGps">0</div></div>
-<div class="kpi-card"><div class="kpi-label">TOTAL KM CARGAS</div><div class="kpi-value" id="kpiCargas">0</div></div>
-<div class="kpi-card highlight"><div class="kpi-label">DIFERENCIA TOTAL</div><div class="kpi-value highlight" id="kpiDif">0</div><div class="kpi-subvalue" id="kpiDifPct"></div></div>
-<div class="kpi-card warning"><div class="kpi-label">CARROS CON DIF &lt; -1000</div><div class="kpi-value" id="kpiCriticos">0</div></div>
+<div class="kpi-card highlight"><div class="kpi-label">KM GPS</div><div class="kpi-value" id="difGps">0</div></div>
+<div class="kpi-card"><div class="kpi-label">KM Cargas</div><div class="kpi-value" id="difCargas">0</div></div>
+<div class="kpi-card highlight"><div class="kpi-label">Diferencia</div><div class="kpi-value" id="difTotal">0</div><div class="kpi-subvalue" id="difPct"></div></div>
+<div class="kpi-card warning"><div class="kpi-label">Carros &lt; -1000</div><div class="kpi-value" id="difCriticos">0</div></div>
 </div>
 </section>
 
-</div></main>
+<!-- ================= FLOTA ================= -->
+<section id="flota" style="display:none">
+<header><h1>Flota Vehicular</h1></header>
+<p style="padding:20px;color:#6b7280">Módulo en desarrollo</p>
+</section>
+
+</div>
+</main>
 
 <script>
-const SHEET_ID="1l3QYg7N050BScrtNhKkHQ-hHNDgaK9Prw95Dzb2-DRE";
-const SHEET_KM="Kilometros";
-const SHEET_DIF="KM Dif Cargas vs GPS";
+const SHEET_ID = "1l3QYg7N050BScrtNhKkHQ-hHNDgaK9Prw95Dzb2-DRE";
+const KM_SHEET = "Kilometros";
+const DIF_SHEET = "KM Dif Cargas vs GPS";
 
 function num(v){return Number((v||"0").toString().replace(/,/g,""))||0}
+function periodo(){const d=new Date();d.setDate(d.getDate()-1);return `Periodo del 01 al ${d.getDate()} de ${d.toLocaleDateString("es-MX",{month:"long"})} ${d.getFullYear()} | Traxion`}
 
-/* ===== MENU ===== */
-menuKm.onclick=()=>show("view-kilometros",menuKm);
-menuFlota.onclick=()=>show("view-flota",menuFlota);
-menuDif.onclick=()=>{show("view-dif",menuDif);cargarDif()};
-
-function show(view,menu){
-document.querySelectorAll("section").forEach(s=>s.style.display="none");
-document.querySelectorAll(".menu-item").forEach(m=>m.classList.remove("active"));
-document.getElementById(view).style.display="block";
-menu.classList.add("active");
+function show(id){
+["km","dif","flota"].forEach(v=>document.getElementById(v).style.display="none");
+document.getElementById(id).style.display="block";
 }
 
-/* ===== DIF ===== */
-async function cargarDif(){
-const csv=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=${SHEET_DIF}`).then(r=>r.text());
-Papa.parse(csv,{header:true,complete:r=>{
-const rows=r.data;
-const udns=[...new Set(rows.map(x=>x.UDN).filter(Boolean))];
-unidadNegocioDif.innerHTML="";
-udns.forEach(u=>unidadNegocioDif.innerHTML+=`<option>${u}</option>`);
-unidadNegocioDif.value=udns[0];
-unidadNegocioDif.onchange=()=>actualizarDif(rows);
-actualizarDif(rows);
-}});
+async function load(sheet){
+const csv=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=${sheet}`).then(r=>r.text());
+return new Promise(r=>Papa.parse(csv,{header:true,complete:x=>r(x.data)}));
 }
 
-function actualizarDif(rows){
-let gps=0,cargas=0,crit=new Set();
+/* ===== KILOMETROS ===== */
+let ch1,ch2,ch3;
+async function initKm(){
+const rows=await load(KM_SHEET);
+const udns=[...new Set(rows.map(r=>r["UNIDAD DE NEGOCIO"]).filter(Boolean))];
+udnKm.innerHTML=udns.map(u=>`<option>${u}</option>`).join("");
+udnKm.onchange=()=>calcKm(rows);
+periodoKm.innerText=periodo();
+calcKm(rows);
+}
+
+function calcKm(rows){
+let t=0,s=0,m=0,v=0,p=0;
 rows.forEach(r=>{
-if(r.UDN===unidadNegocioDif.value){
-const g=num(r["KM GPS"]);
-const c=num(r["KM CARGAS"]);
-gps+=g;cargas+=c;
-if(g-c<-1000)crit.add(r.IDS);
+if(r["UNIDAD DE NEGOCIO"]===udnKm.value){
+t+=num(r["KMS RECORRIDOS"]);
+s+=num(r["KMS DE SERVICIOS"]);
+m+=num(r["KM MTTO/CARGA/RH/SEG V"]);
+v+=num(r["KM INEFICIENTE"]);
+if(!p)p=num(r["KM PERMITIDO"]);
 }});
-kpiGps.innerText=gps.toLocaleString()+" km";
-kpiCargas.innerText=cargas.toLocaleString()+" km";
-kpiDif.innerText=(gps-cargas).toLocaleString()+" km";
-kpiDifPct.innerText=((gps-cargas)/cargas*100).toFixed(2)+"% sobre KM CARGAS";
-kpiCriticos.innerText=crit.size;
+kmTotal.innerText=t.toLocaleString();
+kmServicio.innerText=s.toLocaleString();
+kmMtto.innerText=m.toLocaleString();
+kmVacio.innerText=v.toLocaleString();
+kmPermitido.innerText=p.toLocaleString();
+kmMargen.innerText=(p-t).toLocaleString();
+kmMargenPct.innerText=((p-t)/t*100).toFixed(2)+"% de margen";
+
+[ch1,ch2,ch3].forEach(c=>c&&c.destroy());
+ch1=new Chart(c1,{type:"doughnut",data:{labels:["Servicio","MTTO","Vacío"],datasets:[{data:[s,m,v],backgroundColor:["#84cc16","#374151","#f59e0b"]}]}});
+ch2=new Chart(c2,{type:"bar",data:{labels:["KM"],datasets:[{label:"Recorridos",data:[t],backgroundColor:"#84cc16"},{label:"Permitidos",data:[p],backgroundColor:"#9ca3af"}]}});
+ch3=new Chart(c3,{type:"bar",data:{labels:["%"],datasets:[{label:"Servicio",data:[s/t*100]},{label:"Vacío",data:[v/t*100]}]}});
 }
+
+/* ===== DIFERENCIA ===== */
+async function initDif(){
+const rows=await load(DIF_SHEET);
+const udns=[...new Set(rows.map(r=>r.UDN).filter(Boolean))];
+udnDif.innerHTML=udns.map(u=>`<option>${u}</option>`).join("");
+udnDif.onchange=()=>calcDif(rows);
+periodoDif.innerText=periodo();
+calcDif(rows);
+}
+
+function calcDif(rows){
+let g=0,c=0,set=new Set();
+rows.forEach(r=>{
+if(r.UDN===udnDif.value){
+const gg=num(r["KM GPS"]);
+const cc=num(r["KM CARGAS"]);
+g+=gg;c+=cc;
+if(gg-cc<-1000)set.add(r.IDS);
+}});
+difGps.innerText=g.toLocaleString();
+difCargas.innerText=c.toLocaleString();
+difTotal.innerText=(g-c).toLocaleString();
+difPct.innerText=((g-c)/c*100).toFixed(2)+"% sobre KM CARGAS";
+difCriticos.innerText=set.size;
+}
+
+initKm();
+initDif();
 </script>
 
 </body>
