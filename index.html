@@ -28,18 +28,6 @@ body{
     text-align:center;
     margin-bottom:30px;
 }
-.menu-item{
-    padding:14px 18px;
-    border-radius:10px;
-    margin-bottom:12px;
-    color:#d1d5db;
-    font-weight:600;
-    cursor:pointer;
-}
-.menu-item.active{
-    background:#84cc16;
-    color:#1f2937;
-}
 
 .content{flex:1;padding:30px;}
 .container{max-width:1600px;margin:auto;}
@@ -87,7 +75,6 @@ header h1{color:#84cc16;font-size:32px;}
 }
 .kpi-value{font-size:22px;font-weight:700;}
 .kpi-value.highlight{color:#84cc16}
-.kpi-subvalue{font-size:11px;color:#9ca3af;margin-top:4px;}
 
 .chart-row{
     display:grid;
@@ -102,12 +89,6 @@ header h1{color:#84cc16;font-size:32px;}
     border-radius:12px;
     padding:15px;
 }
-.chart-container h3{
-    font-size:14px;
-    margin-bottom:10px;
-    color:#1f2937;
-}
-canvas{max-height:220px;}
 
 table{width:100%;border-collapse:collapse;margin-top:10px;}
 th,td{
@@ -124,13 +105,10 @@ th{background:#1f2937;color:white;}
 
 <aside class="sidebar">
     <h2>Traxion</h2>
-    <div class="menu-item active" id="menu-km">🚛 Kilómetros</div>
 </aside>
 
 <main class="content">
 <div class="container">
-
-<section id="view-kilometros">
 
 <header>
     <h1>Dashboard de Kilómetros Recorridos</h1>
@@ -149,49 +127,44 @@ th{background:#1f2937;color:white;}
     <div class="kpi-card highlight">
         <div class="kpi-label">TOTAL KM RECORRIDOS</div>
         <div class="kpi-value highlight" id="kpiTotal">0 km</div>
-        <div class="kpi-subvalue">Acumulado del periodo</div>
     </div>
 
     <div class="kpi-card">
         <div class="kpi-label">KM PERMITIDOS</div>
         <div class="kpi-value" id="kpiPermitido">0 km</div>
-        <div class="kpi-subvalue">Límite establecido</div>
     </div>
 
     <div class="kpi-card highlight">
         <div class="kpi-label">MARGEN DISPONIBLE</div>
         <div class="kpi-value highlight" id="kpiMargen">0 km</div>
-        <div class="kpi-subvalue" id="txtMargen"></div>
+        <div id="txtMargen"></div>
     </div>
 
     <div class="kpi-card">
         <div class="kpi-label">KM DE SERVICIO</div>
         <div class="kpi-value" id="kpiServicio">0 km</div>
-        <div class="kpi-subvalue" id="pctServicio">0% del total</div>
     </div>
 
     <div class="kpi-card">
-        <div class="kpi-label">KM MTTO / CARGA / RH / SEG</div>
+        <div class="kpi-label">KM MTTO</div>
         <div class="kpi-value" id="kpiMtto">0 km</div>
-        <div class="kpi-subvalue" id="pctMtto">0% del total</div>
     </div>
 
     <div class="kpi-card warning">
-        <div class="kpi-label">KM INEFICIENTE (VACÍO)</div>
+        <div class="kpi-label">KM VACÍO</div>
         <div class="kpi-value" id="kpiVacio">0 km</div>
-        <div class="kpi-subvalue" id="pctVacio">0% del total</div>
     </div>
 </div>
 
 <!-- Gráficas -->
 <div class="chart-row">
     <div class="chart-container">
-        <h3>Progreso Acumulado Diario vs Permitido</h3>
+        <h3>Progreso Acumulado</h3>
         <canvas id="chartProgreso"></canvas>
     </div>
 
     <div class="chart-container">
-        <h3>Distribución Total (%)</h3>
+        <h3>Distribución</h3>
         <canvas id="chartDistribucion"></canvas>
     </div>
 
@@ -203,7 +176,7 @@ th{background:#1f2937;color:white;}
 
 <!-- Tabla -->
 <div class="chart-container">
-<h3>Tabla Detalle (A–I filtrada por UDN)</h3>
+<h3>Detalle A–I (filtrado por UDN)</h3>
 <table>
 <thead>
 <tr>
@@ -221,7 +194,6 @@ th{background:#1f2937;color:white;}
 </table>
 </div>
 
-</section>
 </div>
 </main>
 
@@ -255,9 +227,8 @@ async function actualizar(){
 
     const hoy = new Date();
     hoy.setDate(hoy.getDate()-1);
-    const mesActual = hoy.getMonth()+1;
 
-    // Leer KM PERMITIDO TOTAL fila 7
+    // KM permitido total (fila 7)
     if(rows.length > 6){
         permitidoTotal = unidad==="SETTEPI SALTILLO"
             ? num(rows[6][28])   // AC7
@@ -268,15 +239,13 @@ async function actualizar(){
         if(idx < 7) return;
 
         const dia = num(unidad==="SETTEPI SALTILLO" ? r[12] : r[20]);
-        const mes = num(unidad==="SETTEPI SALTILLO" ? r[10] : r[18]);
-
-        if(mes !== mesActual) return;
 
         let udnDiario = unidad==="SETTEPI SALTILLO"
-            ? (r[11]||"").trim().toUpperCase()
-            : (r[19]||"").trim().toUpperCase();
+            ? (r[11]||"").toUpperCase()
+            : (r[19]||"").toUpperCase();
 
-        if(udnDiario !== unidad) return;
+        // FILTRO FLEXIBLE SOLO POR UDN
+        if(!udnDiario.includes(unidad)) return;
 
         let kmTotal, kmServ, kmMtto, kmVac, kmPermDiario;
 
@@ -312,29 +281,21 @@ async function actualizar(){
         });
     });
 
+    // KPIs
     kpiTotal.innerText = total.toLocaleString()+" km";
     kpiServicio.innerText = servicio.toLocaleString()+" km";
     kpiMtto.innerText = mtto.toLocaleString()+" km";
     kpiVacio.innerText = vacio.toLocaleString()+" km";
     kpiPermitido.innerText = permitidoTotal.toLocaleString()+" km";
 
-    const pctServ = total>0 ? ((servicio/total)*100).toFixed(1) : 0;
-    const pctMt = total>0 ? ((mtto/total)*100).toFixed(1) : 0;
-    const pctVac = total>0 ? ((vacio/total)*100).toFixed(1) : 0;
-
-    pctServicio.innerText = pctServ+"% del total";
-    pctMtto.innerText = pctMt+"% del total";
-    pctVacio.innerText = pctVac+"% del total";
-
     const margen = permitidoTotal - total;
     kpiMargen.innerText = margen.toLocaleString()+" km";
-
-    const pctMargen = permitidoTotal>0 ? ((margen/permitidoTotal)*100).toFixed(1) : 0;
     const importe = (margen*6).toLocaleString("es-MX",{style:"currency",currency:"MXN"});
-    txtMargen.innerHTML = `${pctMargen}% de los KM permitidos.<br>Equivale a: ${importe}`;
+    txtMargen.innerHTML = `Equivale a: ${importe}`;
 
     headerPeriodo.innerText = "Periodo al día "+hoy.getDate();
 
+    // Gráfica 1
     datosDiarios.sort((a,b)=>a.dia-b.dia);
 
     let labels=[], realAc=0, perAc=0;
@@ -353,18 +314,20 @@ async function actualizar(){
         type:"line",
         data:{labels,
             datasets:[
-                {label:"KM Real Acumulado",data:realData,borderColor:"#84cc16",fill:true},
-                {label:"KM Permitido Acumulado",data:perData,borderColor:"#1f2937"}
+                {label:"Real",data:realData},
+                {label:"Permitido",data:perData}
             ]
         }
     });
 
+    // Gráfica 2
     if(chartDistribucion) chartDistribucion.destroy();
     chartDistribucion = new Chart(document.getElementById("chartDistribucion"),{
         type:"pie",
         data:{labels:["Servicio","Mtto","Vacío"],datasets:[{data:[servicio,mtto,vacio]}]}
     });
 
+    // Gráfica 3
     if(chartDiario) chartDiario.destroy();
     chartDiario = new Chart(document.getElementById("chartDiario"),{
         type:"line",
@@ -375,6 +338,7 @@ async function actualizar(){
         ]}
     });
 
+    // Tabla A–I filtrada por UDN
     const body = document.getElementById("tablaConsolidada");
     body.innerHTML="";
 
