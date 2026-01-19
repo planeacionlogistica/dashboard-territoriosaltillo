@@ -80,7 +80,7 @@ header h1{
     font-weight:600;
 }
 
-/* ====== KPIs (SIN CAMBIOS VISUALES) ====== */
+/* ====== KPIs (SIN CAMBIOS) ====== */
 .kpi-grid{
     display:grid;
     grid-template-columns:repeat(6,1fr);
@@ -112,29 +112,28 @@ header h1{
     color:#9ca3af;
 }
 
-/* ====== GRÁFICAS ====== */
+/* ====== GRÁFICAS: AHORA 3 EN UNA SOLA FILA ====== */
 .chart-container {
     background:#ffffff;
     border:2px solid #e5e7eb;
     border-radius:12px;
-    padding:20px;
-    margin-top:20px;
+    padding:15px;
+    margin-top:15px;
 }
 
+/* NUEVO: 3 gráficas en una fila y más chicas */
 .row-charts{
     display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:20px;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap:15px;
 }
 
-/* ====== TABLAS ====== */
-.tables-grid{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:20px;
-    margin-top:20px;
+/* Hacer las gráficas más compactas */
+canvas{
+    max-height:220px;
 }
 
+/* ====== TABLA CONSOLIDADA ====== */
 table{
     width:100%;
     border-collapse:collapse;
@@ -143,6 +142,7 @@ th,td{
     border:1px solid #e5e7eb;
     padding:8px;
     font-size:12px;
+    text-align:center;
 }
 th{
     background:#1f2937;
@@ -215,52 +215,42 @@ th{
     </div>
 </div>
 
-<!-- ====== GRÁFICA 1 (MÁS PEQUEÑA) ====== -->
-<div class="chart-container" style="max-width:900px;">
-    <h3>Progreso Acumulado (Real vs Permitido Diario)</h3>
-    <canvas id="chartProgreso"></canvas>
-</div>
-
-<!-- ====== GRÁFICAS ABAJO (PIE + LÍNEAS) ====== -->
+<!-- ====== AHORA 3 GRÁFICAS EN UNA SOLA FILA ====== -->
 <div class="row-charts">
     <div class="chart-container">
-        <h3>Distribución Total del Periodo</h3>
+        <h3>Progreso Acumulado</h3>
+        <canvas id="chartProgreso"></canvas>
+    </div>
+
+    <div class="chart-container">
+        <h3>Distribución Total (%)</h3>
         <canvas id="chartPie"></canvas>
     </div>
 
     <div class="chart-container">
-        <h3>Comportamiento Diario por Tipo de KM</h3>
+        <h3>Comportamiento Diario</h3>
         <canvas id="chartLineas"></canvas>
     </div>
 </div>
 
-<!-- ====== TABLAS ====== -->
-<div class="tables-grid">
-
+<!-- ====== NUEVA TABLA ÚNICA CONSOLIDADA ====== -->
 <div class="chart-container">
-<h3>Por Gerente</h3>
+<h3>Tabla Consolidada (ordenada por % vacío)</h3>
 <table>
-<thead><tr><th>Gerente</th><th>Km Totales</th></tr></thead>
-<tbody id="tablaGerente"></tbody>
+<thead>
+<tr>
+  <th>Gerente</th>
+  <th>Jefe</th>
+  <th>Cliente</th>
+  <th>KM Recorridos</th>
+  <th>KM Servicio</th>
+  <th>KM Mtto</th>
+  <th>KM Ineficiente</th>
+  <th>% Vacío</th>
+</tr>
+</thead>
+<tbody id="tablaConsolidada"></tbody>
 </table>
-</div>
-
-<div class="chart-container">
-<h3>Por Jefe</h3>
-<table>
-<thead><tr><th>Jefe</th><th>Km Totales</th></tr></thead>
-<tbody id="tablaJefe"></tbody>
-</table>
-</div>
-
-<div class="chart-container">
-<h3>Por Cliente</h3>
-<table>
-<thead><tr><th>Cliente</th><th>Km Totales</th></tr></thead>
-<tbody id="tablaCliente"></tbody>
-</table>
-</div>
-
 </div>
 
 </section>
@@ -293,11 +283,9 @@ async function actualizar(){
 
     let total=0, servicio=0, mtto=0, vacio=0, permitido=0;
     let datosDiarios = [];
+    let tablaMap = {}; // <-- NUEVO para tabla consolidada
 
     const hoy = new Date(); hoy.setDate(hoy.getDate()-1);
-    const diasMes = new Date(hoy.getFullYear(), hoy.getMonth()+1, 0).getDate();
-
-    let gerentes={}, jefes={}, clientes={};
 
     rows.forEach(r=>{
         const udnMaestro = (r[0]||"").trim().toUpperCase();
@@ -320,13 +308,13 @@ async function actualizar(){
                 kmServ  = num(r[14]);
                 kmMtto  = num(r[15]);
                 kmVac   = num(r[16]);
-                kmPermitidoDia = num(r[17]); // Col R
+                kmPermitidoDia = num(r[17]);
             } else {
                 kmTotal = num(r[21]);
                 kmServ  = num(r[22]);
                 kmMtto  = num(r[23]);
                 kmVac   = num(r[24]);
-                kmPermitidoDia = num(r[25]); // Col Z
+                kmPermitidoDia = num(r[25]);
             }
 
             datosDiarios.push({dia,kmTotal,kmServ,kmMtto,kmVac,kmPermitidoDia});
@@ -335,13 +323,23 @@ async function actualizar(){
             const jefe = (r[2]||"SIN JEFE");
             const cliente = (r[3]||"SIN CLIENTE");
 
-            gerentes[gerente] = (gerentes[gerente]||0) + kmTotal;
-            jefes[jefe] = (jefes[jefe]||0) + kmTotal;
-            clientes[cliente] = (clientes[cliente]||0) + kmTotal;
+            const key = gerente+"|"+jefe+"|"+cliente;
+
+            if(!tablaMap[key]){
+                tablaMap[key] = {
+                    gerente, jefe, cliente,
+                    rec:0, serv:0, mtto:0, ine:0
+                };
+            }
+
+            tablaMap[key].rec  += kmTotal;
+            tablaMap[key].serv += kmServ;
+            tablaMap[key].mtto += kmMtto;
+            tablaMap[key].ine  += kmVac;
         }
     });
 
-    /* ===== KPIs (solo cambia el subtexto del margen) ===== */
+    /* ===== KPIs (SIN CAMBIOS) ===== */
     kpiTotal.innerText = total.toLocaleString()+" km";
     kpiServicio.innerText = servicio.toLocaleString()+" km";
     kpiMtto.innerText = mtto.toLocaleString()+" km";
@@ -353,19 +351,14 @@ async function actualizar(){
 
     const pct = permitido?((margen/permitido)*100).toFixed(1):0;
     const importe = (margen*6).toLocaleString("es-MX",{style:"currency",currency:"MXN"});
-
     txtMargen.innerHTML = `${pct}% de los KM permitidos.<br>Y en importe es: ${importe}`;
-
-    pctServicio.innerText = total?((servicio/total)*100).toFixed(1)+"% del total":"";
-    pctMtto.innerText = total?((mtto/total)*100).toFixed(1)+"% del total":"";
-    pctVacio.innerText = total?((vacio/total)*100).toFixed(1)+"% del total":"";
 
     headerPeriodo.innerText = "Periodo al día "+hoy.getDate();
 
-    /* ===== GRAFICA 1: REAL vs PERMITIDO ACUMULADO ===== */
+    /* ===== GRAFICA 1 ===== */
     datosDiarios.sort((a,b)=>a.dia-b.dia);
 
-    let labels=[], realAc=0, perAc=0, realData=[], perData=[], pctLine=[];
+    let labels=[], realAc=0, perAc=0, realData=[], perData=[];
 
     datosDiarios.forEach(d=>{
         realAc += d.kmTotal;
@@ -373,32 +366,32 @@ async function actualizar(){
         labels.push(d.dia);
         realData.push(realAc);
         perData.push(perAc);
-        pctLine.push(perAc?((realAc/perAc)*100).toFixed(0):0);
     });
 
-    const ctx1 = document.getElementById("chartProgreso").getContext("2d");
     if(chartProgreso) chartProgreso.destroy();
-
-    chartProgreso = new Chart(ctx1,{
+    chartProgreso = new Chart(chartProgreso = document.getElementById("chartProgreso"),{
         type:"line",
         data:{labels,datasets:[
             {label:"KM Real Acumulado",data:realData,borderColor:"#84cc16"},
             {label:"KM Permitido Acumulado",data:perData,borderColor:"#1f2937"}
-        ]},
-        options:{plugins:{
-            tooltip:{enabled:false},
-            annotation:{annotations:[]}
-        }}
+        ]}
     });
 
-    /* ===== GRAFICA PIE ===== */
-    const ctx2 = document.getElementById("chartPie").getContext("2d");
-    if(chartPie) chartPie.destroy();
+    /* ===== PIE CON PORCENTAJES VISIBLES ===== */
+    const totalPie = servicio+mtto+vacio;
+    const pServ = totalPie?((servicio/totalPie)*100).toFixed(1):0;
+    const pMtto = totalPie?((mtto/totalPie)*100).toFixed(1):0;
+    const pVac  = totalPie?((vacio/totalPie)*100).toFixed(1):0;
 
-    chartPie = new Chart(ctx2,{
+    if(chartPie) chartPie.destroy();
+    chartPie = new Chart(document.getElementById("chartPie"),{
         type:"pie",
         data:{
-            labels:["Servicio","Mtto","Vacío"],
+            labels:[
+              `Servicio ${pServ}%`,
+              `Mtto ${pMtto}%`,
+              `Vacío ${pVac}%`
+            ],
             datasets:[{
                 data:[servicio,mtto,vacio],
                 backgroundColor:["#84cc16","#9ca3af","#f59e0b"]
@@ -406,11 +399,9 @@ async function actualizar(){
         }
     });
 
-    /* ===== GRAFICA LINEAS ===== */
-    const ctx3 = document.getElementById("chartLineas").getContext("2d");
+    /* ===== LINEAS ===== */
     if(chartLineas) chartLineas.destroy();
-
-    chartLineas = new Chart(ctx3,{
+    chartLineas = new Chart(document.getElementById("chartLineas"),{
         type:"line",
         data:{
             labels,
@@ -422,15 +413,30 @@ async function actualizar(){
         }
     });
 
-    /* ===== TABLAS ===== */
-    tablaGerente.innerHTML = Object.entries(gerentes)
-        .map(([g,k])=>`<tr><td>${g}</td><td>${k.toLocaleString()} km</td></tr>`).join("");
+    /* ===== TABLA CONSOLIDADA ===== */
+    let tabla = Object.values(tablaMap).map(r=>{
+        let pctVac = r.rec? (r.ine/r.rec*100) : 0;
+        return {...r, pctVac};
+    });
 
-    tablaJefe.innerHTML = Object.entries(jefes)
-        .map(([g,k])=>`<tr><td>${g}</td><td>${k.toLocaleString()} km</td></tr>`).join("");
+    tabla.sort((a,b)=> b.pctVac - a.pctVac);
 
-    tablaCliente.innerHTML = Object.entries(clientes)
-        .map(([g,k])=>`<tr><td>${g}</td><td>${k.toLocaleString()} km</td></tr>`).join("");
+    const body = document.getElementById("tablaConsolidada");
+    body.innerHTML="";
+
+    tabla.forEach(r=>{
+        body.innerHTML += `
+        <tr>
+          <td>${r.gerente}</td>
+          <td>${r.jefe}</td>
+          <td>${r.cliente}</td>
+          <td>${r.rec.toLocaleString()}</td>
+          <td>${r.serv.toLocaleString()}</td>
+          <td>${r.mtto.toLocaleString()}</td>
+          <td>${r.ine.toLocaleString()}</td>
+          <td>${r.pctVac.toFixed(2)}%</td>
+        </tr>`;
+    });
 }
 
 unidadNegocio.addEventListener("change",actualizar);
