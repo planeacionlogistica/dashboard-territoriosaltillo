@@ -234,7 +234,6 @@ header h1{
 
 </div>
 </main>
-
 <script>
 /* ================= MENU ================= */
 const menuKm = document.getElementById("menu-km");
@@ -283,93 +282,100 @@ async function cargarDatos(){
 
     return new Promise(resolve=>{
         Papa.parse(csv,{
-            header:false, // Cambiado a false para usar índices
+            header:false,
             skipEmptyLines:true,
             complete:r=>resolve(r.data)
         });
     });
 }
 
-// Variables globales para gráficas
 let chartProgreso, chartDistribucion;
 
 async function actualizarKPIs(){
     const unidad = unidadNegocio.value.trim().toUpperCase();
     const rows = await cargarDatos();
-    console.log("Filas cargadas:", rows.length); // Debug: Número de filas
 
     let total=0, servicio=0, mtto=0, vacio=0, permitido=0;
     let datosDiarios = [];
 
-    // Calcular período
     const hoy = new Date();
     hoy.setDate(hoy.getDate() - 1);
     const diasEnMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate();
 
-    rows.forEach((r, index) => {
-        // Maestros: Columnas A-J (índices 0-9)
-        const udnMaestro = (r[0] || "").trim().toUpperCase(); // Col A: UNIDAD DE NEGOCIO
+    rows.forEach(r => {
+
+        // === MAESTROS ===
+        const udnMaestro = (r[0] || "").trim().toUpperCase();
         if(udnMaestro === unidad){
-            total += num(r[4]); // Col E: KMS RECORRIDOS
-            servicio += num(r[5]); // Col F: KMS DE SERVICIOS
-            mtto += num(r[6]); // Col G: KM MTTO/CARGA/RH/SEG V
-            vacio += num(r[7]); // Col H: KM INEFICIENTE
-            if(!permitido) permitido = num(r[9]); // Col J: KM PERMITIDO
-            console.log("Valor maestro total:", total); // Debug
+            total += num(r[4]);
+            servicio += num(r[5]);
+            mtto += num(r[6]);
+            vacio += num(r[7]);
+            if(!permitido) permitido = num(r[9]);
         }
 
-        // Diarios: Filtrar por "udn" en L (índice 11) o T (índice 19)
-        const udnDiario = (r[11] || r[19] || "").trim().toUpperCase(); // Col L o T: udn
-        if(udnDiario === unidad && r[12] || r[20]){ // Col M o U: DIA
-            const dia = num(r[12] || r[20]); // DIA
-            if(dia >= 1 && dia <= hoy.getDate()){
-                let kmTotal, kmServicio, kmMtto, kmVacio;
-                if(unidad === "SETTEPI SALTILLO"){
-                    kmTotal = num(r[13]); // Col N: KMS RECORRIDOS
-                    kmServicio = num(r[14]); // Col O: KMS DE SERVICIOS
-                    kmMtto = num(r[15]); // Col P: KM MTTO/CARGA/RH/SEG V
-                    kmVacio = num(r[16]); // Col Q: KM INEFICIENTE
-                } else if(unidad === "LIPU SALTILLO"){
-                    kmTotal = num(r[21]); // Col V: KMS RECORRIDOS
-                    kmServicio = num(r[22]); // Col W: KMS DE SERVICIOS
-                    kmMtto = num(r[23]); // Col X: KM MTTO/CARGA/RH/SEG V
-                    kmVacio = num(r[24]); // Col Y: KM INEFICIENTE
-                }
-                datosDiarios.push({
-                    dia: dia,
-                    kmTotal: kmTotal,
-                    servicio: kmServicio,
-                    mtto: kmMtto,
-                    vacio: kmVacio
-                });
-                console.log("Dato diario agregado:", dia, kmTotal); // Debug
+        // === DIARIOS ===
+        const udnDiario = (r[11] || r[19] || "").trim().toUpperCase();
+        const dia = num(r[12] || r[20]);
+
+        if(udnDiario === unidad && dia >= 1 && dia <= hoy.getDate()){
+
+            let kmTotal=0, kmServicio=0, kmMtto=0, kmVacio=0;
+
+            if(unidad === "SETTEPI SALTILLO"){
+                kmTotal = num(r[13]);
+                kmServicio = num(r[14]);
+                kmMtto = num(r[15]);
+                kmVacio = num(r[16]);
+            } 
+            else if(unidad === "LIPU SALTILLO"){
+                kmTotal = num(r[21]);
+                kmServicio = num(r[22]);
+                kmMtto = num(r[23]);
+                kmVacio = num(r[24]);
             }
+
+            datosDiarios.push({
+                dia,
+                kmTotal,
+                servicio: kmServicio,
+                mtto: kmMtto,
+                vacio: kmVacio
+            });
         }
     });
 
-    // Actualizar KPIs
-    kpiTotal.innerText      = total.toLocaleString("es-MX",{maximumFractionDigits:2})+" km";
-    kpiServicio.innerText  = servicio.toLocaleString("es-MX",{maximumFractionDigits:2})+" km";
-    kpiMtto.innerText      = mtto.toLocaleString("es-MX",{maximumFractionDigits:2})+" km";
-    kpiVacio.innerText     = vacio.toLocaleString("es-MX",{maximumFractionDigits:2})+" km";
-    kpiPermitido.innerText = permitido.toLocaleString("es-MX",{maximumFractionDigits:2})+" km";
-    kpiMargen.innerText    = (permitido-total).toLocaleString("es-MX",{maximumFractionDigits:2})+" km";
+    // === KPIs ===
+    kpiTotal.innerText = total.toLocaleString()+" km";
+    kpiServicio.innerText = servicio.toLocaleString()+" km";
+    kpiMtto.innerText = mtto.toLocaleString()+" km";
+    kpiVacio.innerText = vacio.toLocaleString()+" km";
+    kpiPermitido.innerText = permitido.toLocaleString()+" km";
+    kpiMargen.innerText = (permitido-total).toLocaleString()+" km";
+
     pctServicio.innerText = total ? ((servicio/total)*100).toFixed(1)+"% del total" : "";
-    pctMtto.innerText     = total ? ((mtto/total)*100).toFixed(1)+"% del total" : "";
-    pctVacio.innerText    = total ? ((vacio/total)*100).toFixed(1)+"% del total" : "";
+    pctMtto.innerText = total ? ((mtto/total)*100).toFixed(1)+"% del total" : "";
+    pctVacio.innerText = total ? ((vacio/total)*100).toFixed(1)+"% del total" : "";
+
     headerPeriodo.innerText = periodo();
 
-    // Preparar datos para gráficas (igual que antes)
+    // === PREPARAR DATOS PARA GRÁFICAS ===
+    datosDiarios.sort((a,b)=>a.dia-b.dia);
+
     const objetivoDiario = permitido / diasEnMes;
     let acumuladoReal = 0, acumuladoObjetivo = 0;
-    const labels = [], realData = [], objetivoData = [];
-    const servicioData = [], mttoData = [], vacioData = [];
 
-    datosDiarios.sort((a,b)=>a.dia - b.dia);
+    const labels = [];
+    const realData = [];
+    const objetivoData = [];
+    const servicioData = [];
+    const mttoData = [];
+    const vacioData = [];
 
-    for(let dia=1; dia<=hoy.getDate(); dia++) {
-        const diaData = datosDiarios.find(d=>d.dia === dia);
-        if(diaData) {
+    for(let d=1; d<=hoy.getDate(); d++){
+        const diaData = datosDiarios.find(x=>x.dia===d);
+
+        if(diaData){
             acumuladoReal += diaData.kmTotal;
             servicioData.push(diaData.servicio);
             mttoData.push(diaData.mtto);
@@ -379,18 +385,60 @@ async function actualizarKPIs(){
             mttoData.push(0);
             vacioData.push(0);
         }
+
         acumuladoObjetivo += objetivoDiario;
-        labels.push(dia.toString());
+        labels.push(d.toString());
         realData.push(acumuladoReal);
         objetivoData.push(acumuladoObjetivo);
     }
 
-    // Crear/actualizar gráfica de progreso
-    const ctxProgreso = document.getElementById('chartProgreso').getContext('2d');
+    // === GRÁFICA 1: PROGRESO ===
+    const ctx1 = document.getElementById("chartProgreso").getContext("2d");
     if(chartProgreso) chartProgreso.destroy();
-    chartProgreso = new Chart(ctxProgreso, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'KM Recorridos Acumulados',
+
+    chartProgreso = new Chart(ctx1, {
+        type:"line",
+        data:{
+            labels,
+            datasets:[
+                {
+                    label:"KM Real Acumulado",
+                    data: realData
+                },
+                {
+                    label:"Objetivo Acumulado",
+                    data: objetivoData
+                }
+            ]
+        },
+        options:{
+            responsive:true
+        }
+    });
+
+    // === GRÁFICA 2: DISTRIBUCIÓN ===
+    const ctx2 = document.getElementById("chartDistribucion").getContext("2d");
+    if(chartDistribucion) chartDistribucion.destroy();
+
+    chartDistribucion = new Chart(ctx2, {
+        type:"bar",
+        data:{
+            labels,
+            datasets:[
+                { label:"Servicio", data: servicioData },
+                { label:"Mtto/Carga/RH/Seg", data: mttoData },
+                { label:"Vacío", data: vacioData }
+            ]
+        },
+        options:{
+            responsive:true
+        }
+    });
+}
+
+// Cargar al iniciar y al cambiar unidad
+unidadNegocio.addEventListener("change", actualizarKPIs);
+actualizarKPIs();
+</script>
+
+
