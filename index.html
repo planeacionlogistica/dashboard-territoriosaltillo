@@ -283,7 +283,7 @@ async function cargarDatos(){
 
     return new Promise(resolve=>{
         Papa.parse(csv,{
-            header:true,
+            header:false, // Cambiado a false para usar índices
             skipEmptyLines:true,
             complete:r=>resolve(r.data)
         });
@@ -296,51 +296,53 @@ let chartProgreso, chartDistribucion;
 async function actualizarKPIs(){
     const unidad = unidadNegocio.value.trim().toUpperCase();
     const rows = await cargarDatos();
+    console.log("Filas cargadas:", rows.length); // Debug: Número de filas
 
     let total=0, servicio=0, mtto=0, vacio=0, permitido=0;
-    let datosDiarios = []; // Array para datos diarios
+    let datosDiarios = [];
 
     // Calcular período
     const hoy = new Date();
     hoy.setDate(hoy.getDate() - 1);
-    const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
     const diasEnMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate();
 
-    rows.forEach(r=>{
-        const udn = (r["UNIDAD DE NEGOCIO"]||"").trim().toUpperCase();
-        if(udn === unidad){
-            // Datos maestros (columnas A-J)
-            total    += num(r["KMS RECORRIDOS"]);
-            servicio += num(r["KMS DE SERVICIOS"]);
-            mtto     += num(r["KM MTTO/CARGA/RH/SEG V"]);
-            vacio    += num(r["KM INEFICIENTE"]);
-            if(!permitido) permitido = num(r["KM PERMITIDO"]);
+    rows.forEach((r, index) => {
+        // Maestros: Columnas A-J (índices 0-9)
+        const udnMaestro = (r[0] || "").trim().toUpperCase(); // Col A: UNIDAD DE NEGOCIO
+        if(udnMaestro === unidad){
+            total += num(r[4]); // Col E: KMS RECORRIDOS
+            servicio += num(r[5]); // Col F: KMS DE SERVICIOS
+            mtto += num(r[6]); // Col G: KM MTTO/CARGA/RH/SEG V
+            vacio += num(r[7]); // Col H: KM INEFICIENTE
+            if(!permitido) permitido = num(r[9]); // Col J: KM PERMITIDO
+            console.log("Valor maestro total:", total); // Debug
+        }
 
-            // Procesar desgloses diarios (filtrar por "udn" en L o T)
-            const udnDiario = (r["udn"]||"").trim().toUpperCase();
-            if(udnDiario === unidad && r["DIA"]) {
-                const dia = num(r["DIA"]); // Número directo (1, 2, 3, etc.)
-                if(dia >= 1 && dia <= hoy.getDate()) {
-                    let kmTotal, kmServicio, kmMtto, kmVacio;
-                    if(unidad === "SETTEPI SALTILLO") {
-                        kmTotal = num(r["KMS RECORRIDOS"]); // Col N
-                        kmServicio = num(r["KMS DE SERVICIOS"]); // Col O
-                        kmMtto = num(r["KM MTTO/CARGA/RH/SEG V"]); // Col P
-                        kmVacio = num(r["KM INEFICIENTE"]); // Col Q
-                    } else if(unidad === "LIPU SALTILLO") {
-                        kmTotal = num(r["KMS RECORRIDOS"]); // Col V
-                        kmServicio = num(r["KMS DE SERVICIOS"]); // Col W
-                        kmMtto = num(r["KM MTTO/CARGA/RH/SEG V"]); // Col X
-                        kmVacio = num(r["KM INEFICIENTE"]); // Col Y
-                    }
-                    datosDiarios.push({
-                        dia: dia,
-                        kmTotal: kmTotal,
-                        servicio: kmServicio,
-                        mtto: kmMtto,
-                        vacio: kmVacio
-                    });
+        // Diarios: Filtrar por "udn" en L (índice 11) o T (índice 19)
+        const udnDiario = (r[11] || r[19] || "").trim().toUpperCase(); // Col L o T: udn
+        if(udnDiario === unidad && r[12] || r[20]){ // Col M o U: DIA
+            const dia = num(r[12] || r[20]); // DIA
+            if(dia >= 1 && dia <= hoy.getDate()){
+                let kmTotal, kmServicio, kmMtto, kmVacio;
+                if(unidad === "SETTEPI SALTILLO"){
+                    kmTotal = num(r[13]); // Col N: KMS RECORRIDOS
+                    kmServicio = num(r[14]); // Col O: KMS DE SERVICIOS
+                    kmMtto = num(r[15]); // Col P: KM MTTO/CARGA/RH/SEG V
+                    kmVacio = num(r[16]); // Col Q: KM INEFICIENTE
+                } else if(unidad === "LIPU SALTILLO"){
+                    kmTotal = num(r[21]); // Col V: KMS RECORRIDOS
+                    kmServicio = num(r[22]); // Col W: KMS DE SERVICIOS
+                    kmMtto = num(r[23]); // Col X: KM MTTO/CARGA/RH/SEG V
+                    kmVacio = num(r[24]); // Col Y: KM INEFICIENTE
                 }
+                datosDiarios.push({
+                    dia: dia,
+                    kmTotal: kmTotal,
+                    servicio: kmServicio,
+                    mtto: kmMtto,
+                    vacio: kmVacio
+                });
+                console.log("Dato diario agregado:", dia, kmTotal); // Debug
             }
         }
     });
@@ -357,13 +359,12 @@ async function actualizarKPIs(){
     pctVacio.innerText    = total ? ((vacio/total)*100).toFixed(1)+"% del total" : "";
     headerPeriodo.innerText = periodo();
 
-    // Preparar datos para gráficas
+    // Preparar datos para gráficas (igual que antes)
     const objetivoDiario = permitido / diasEnMes;
     let acumuladoReal = 0, acumuladoObjetivo = 0;
     const labels = [], realData = [], objetivoData = [];
     const servicioData = [], mttoData = [], vacioData = [];
 
-    // Ordenar datos diarios por día
     datosDiarios.sort((a,b)=>a.dia - b.dia);
 
     for(let dia=1; dia<=hoy.getDate(); dia++) {
@@ -393,53 +394,3 @@ async function actualizarKPIs(){
             labels: labels,
             datasets: [{
                 label: 'KM Recorridos Acumulados',
-                data: realData,
-                borderColor: '#84cc16',
-                backgroundColor: 'rgba(132, 204, 22, 0.1)',
-                fill: false
-            }, {
-                label: 'Objetivo Acumulado',
-                data: objetivoData,
-                borderColor: '#f59e0b',
-                backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                fill: false
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                x: { title: { display: true, text: 'Día del Mes' } },
-                y: { title: { display: true, text: 'KM' } }
-            }
-        }
-    });
-
-    // Crear/actualizar gráfica de distribución
-    const ctxDistribucion = document.getElementById('chartDistribucion').getContext('2d');
-    if(chartDistribucion) chartDistribucion.destroy();
-    chartDistribucion = new Chart(ctxDistribucion, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'KM Servicio',
-                data: servicioData,
-                backgroundColor: '#84cc16'
-            }, {
-                label: 'KM MTTO/Carga/RH/Seg',
-                data: mttoData,
-                backgroundColor: '#3b82f6'
-            }, {
-                label: 'KM Ineficiente (Vacío)',
-                data: vacioData,
-                backgroundColor: '#f59e0b'
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                x: { title: { display: true, text: 'Día del Mes' }, stacked: true },
-                y: { title: { display: true, text: 'KM' }, stacked: true }
-            }
-        }
-    });
