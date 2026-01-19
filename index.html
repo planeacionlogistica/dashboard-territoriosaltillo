@@ -80,7 +80,7 @@ header h1{
     font-weight:600;
 }
 
-/* ====== KPIs (SIN CAMBIOS) ====== */
+/* ====== KPIs ====== */
 .kpi-grid{
     display:grid;
     grid-template-columns:repeat(6,1fr);
@@ -112,7 +112,7 @@ header h1{
     color:#9ca3af;
 }
 
-/* ====== GRÁFICAS: AHORA 3 EN UNA SOLA FILA ====== */
+/* ====== GRÁFICAS ====== */
 .chart-container {
     background:#ffffff;
     border:2px solid #e5e7eb;
@@ -121,19 +121,17 @@ header h1{
     margin-top:15px;
 }
 
-/* NUEVO: 3 gráficas en una fila y más chicas */
 .row-charts{
     display:grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap:15px;
 }
 
-/* Hacer las gráficas más compactas */
 canvas{
     max-height:220px;
 }
 
-/* ====== TABLA CONSOLIDADA ====== */
+/* ====== TABLA ====== */
 table{
     width:100%;
     border-collapse:collapse;
@@ -176,7 +174,6 @@ th{
     </select>
 </div>
 
-<!-- ====== KPIs (TAL CUAL LOS TENÍAS) ====== -->
 <div class="kpi-grid">
     <div class="kpi-card highlight">
         <div class="kpi-label">TOTAL KM RECORRIDOS</div>
@@ -215,7 +212,6 @@ th{
     </div>
 </div>
 
-<!-- ====== AHORA 3 GRÁFICAS EN UNA SOLA FILA ====== -->
 <div class="row-charts">
     <div class="chart-container">
         <h3>Progreso Acumulado</h3>
@@ -233,7 +229,6 @@ th{
     </div>
 </div>
 
-<!-- ====== NUEVA TABLA ÚNICA CONSOLIDADA ====== -->
 <div class="chart-container">
 <h3>Tabla Consolidada (ordenada por % vacío)</h3>
 <table>
@@ -281,84 +276,54 @@ async function actualizar(){
     const unidad = unidadNegocio.value.trim().toUpperCase();
     const rows = await cargarDatos();
 
-    let total=0, servicio=0, mtto=0, vacio=0, permitido=0;
+    let total=0, servicio=0, mtto=0, vacio=0, permitidoTotal=0;
     let datosDiarios = [];
-    let tablaMap = {}; // <-- NUEVO para tabla consolidada
+    let tablaMap = {};
 
     const hoy = new Date(); hoy.setDate(hoy.getDate()-1);
 
     rows.forEach(r=>{
         const udnMaestro = (r[0]||"").trim().toUpperCase();
+
         if(udnMaestro===unidad){
             total += num(r[4]);
             servicio += num(r[5]);
             mtto += num(r[6]);
             vacio += num(r[7]);
-            if(!permitido) permitido = num(r[9]);
+            permitidoTotal += num(r[9]);
         }
 
-        const udnDiario = (r[11]||r[19]||"").trim().toUpperCase();
-        const dia = num(r[12]||r[20]);
+        const diaSettepi = num(r[12]);
+        const diaLipu = num(r[20]);
 
-        if(udnDiario===unidad && dia>=1 && dia<=hoy.getDate()){
-            let kmTotal, kmServ, kmMtto, kmVac, kmPermitidoDia;
+        if(unidad==="SETTEPI SALTILLO" && diaSettepi>=1 && diaSettepi<=hoy.getDate()){
+            datosDiarios.push({
+                dia: diaSettepi,
+                kmTotal: num(r[13]),
+                kmServ: num(r[14]),
+                kmMtto: num(r[15]),
+                kmVac: num(r[16]),
+                kmPermitidoDia: num(r[17]),
+                gerente:r[1], jefe:r[2], cliente:r[3]
+            });
+        }
 
-            if(unidad==="SETTEPI SALTILLO"){
-                kmTotal = num(r[13]);
-                kmServ  = num(r[14]);
-                kmMtto  = num(r[15]);
-                kmVac   = num(r[16]);
-                kmPermitidoDia = num(r[17]);
-            } else {
-                kmTotal = num(r[21]);
-                kmServ  = num(r[22]);
-                kmMtto  = num(r[23]);
-                kmVac   = num(r[24]);
-                kmPermitidoDia = num(r[25]);
-            }
-
-            datosDiarios.push({dia,kmTotal,kmServ,kmMtto,kmVac,kmPermitidoDia});
-
-            const gerente = (r[1]||"SIN GERENTE");
-            const jefe = (r[2]||"SIN JEFE");
-            const cliente = (r[3]||"SIN CLIENTE");
-
-            const key = gerente+"|"+jefe+"|"+cliente;
-
-            if(!tablaMap[key]){
-                tablaMap[key] = {
-                    gerente, jefe, cliente,
-                    rec:0, serv:0, mtto:0, ine:0
-                };
-            }
-
-            tablaMap[key].rec  += kmTotal;
-            tablaMap[key].serv += kmServ;
-            tablaMap[key].mtto += kmMtto;
-            tablaMap[key].ine  += kmVac;
+        if(unidad==="LIPU SALTILLO" && diaLipu>=1 && diaLipu<=hoy.getDate()){
+            datosDiarios.push({
+                dia: diaLipu,
+                kmTotal: num(r[21]),
+                kmServ: num(r[22]),
+                kmMtto: num(r[23]),
+                kmVac: num(r[24]),
+                kmPermitidoDia: num(r[25]),
+                gerente:r[1], jefe:r[2], cliente:r[3]
+            });
         }
     });
 
-    /* ===== KPIs (SIN CAMBIOS) ===== */
-    kpiTotal.innerText = total.toLocaleString()+" km";
-    kpiServicio.innerText = servicio.toLocaleString()+" km";
-    kpiMtto.innerText = mtto.toLocaleString()+" km";
-    kpiVacio.innerText = vacio.toLocaleString()+" km";
-    kpiPermitido.innerText = permitido.toLocaleString()+" km";
-
-    const margen = permitido-total;
-    kpiMargen.innerText = margen.toLocaleString()+" km";
-
-    const pct = permitido?((margen/permitido)*100).toFixed(1):0;
-    const importe = (margen*6).toLocaleString("es-MX",{style:"currency",currency:"MXN"});
-    txtMargen.innerHTML = `${pct}% de los KM permitidos.<br>Y en importe es: ${importe}`;
-
-    headerPeriodo.innerText = "Periodo al día "+hoy.getDate();
-
-    /* ===== GRAFICA 1 ===== */
     datosDiarios.sort((a,b)=>a.dia-b.dia);
 
-    let labels=[], realAc=0, perAc=0, realData=[], perData=[];
+    let realAc=0, perAc=0, labels=[], realData=[], perData=[];
 
     datosDiarios.forEach(d=>{
         realAc += d.kmTotal;
@@ -366,18 +331,42 @@ async function actualizar(){
         labels.push(d.dia);
         realData.push(realAc);
         perData.push(perAc);
+
+        const key = d.gerente+"|"+d.jefe+"|"+d.cliente;
+        if(!tablaMap[key]){
+            tablaMap[key]={gerente:d.gerente,jefe:d.jefe,cliente:d.cliente,rec:0,serv:0,mtto:0,ine:0};
+        }
+        tablaMap[key].rec += d.kmTotal;
+        tablaMap[key].serv += d.kmServ;
+        tablaMap[key].mtto += d.kmMtto;
+        tablaMap[key].ine += d.kmVac;
     });
 
+    kpiTotal.innerText = total.toLocaleString()+" km";
+    kpiServicio.innerText = servicio.toLocaleString()+" km";
+    kpiMtto.innerText = mtto.toLocaleString()+" km";
+    kpiVacio.innerText = vacio.toLocaleString()+" km";
+    kpiPermitido.innerText = permitidoTotal.toLocaleString()+" km";
+
+    const margen = permitidoTotal-total;
+    kpiMargen.innerText = margen.toLocaleString()+" km";
+
+    const pct = permitidoTotal?((margen/permitidoTotal)*100).toFixed(1):0;
+    const importe = (margen*6).toLocaleString("es-MX",{style:"currency",currency:"MXN"});
+    txtMargen.innerHTML = `${pct}% de los KM permitidos.<br>Y en importe es: ${importe}`;
+
+    headerPeriodo.innerText = "Periodo al día "+hoy.getDate();
+
     if(chartProgreso) chartProgreso.destroy();
-    chartProgreso = new Chart(chartProgreso = document.getElementById("chartProgreso"),{
+    chartProgreso = new Chart(document.getElementById("chartProgreso"),{
         type:"line",
-        data:{labels,datasets:[
+        data:{labels,
+            datasets:[
             {label:"KM Real Acumulado",data:realData,borderColor:"#84cc16"},
             {label:"KM Permitido Acumulado",data:perData,borderColor:"#1f2937"}
         ]}
     });
 
-    /* ===== PIE CON PORCENTAJES VISIBLES ===== */
     const totalPie = servicio+mtto+vacio;
     const pServ = totalPie?((servicio/totalPie)*100).toFixed(1):0;
     const pMtto = totalPie?((mtto/totalPie)*100).toFixed(1):0;
@@ -399,7 +388,6 @@ async function actualizar(){
         }
     });
 
-    /* ===== LINEAS ===== */
     if(chartLineas) chartLineas.destroy();
     chartLineas = new Chart(document.getElementById("chartLineas"),{
         type:"line",
@@ -413,7 +401,6 @@ async function actualizar(){
         }
     });
 
-    /* ===== TABLA CONSOLIDADA ===== */
     let tabla = Object.values(tablaMap).map(r=>{
         let pctVac = r.rec? (r.ine/r.rec*100) : 0;
         return {...r, pctVac};
