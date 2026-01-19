@@ -8,6 +8,9 @@
 <!-- PapaParse -->
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
+<!-- Agregar Chart.js para gráficas -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{
@@ -114,6 +117,20 @@ header h1{
     font-size:11px;
     color:#9ca3af;
 }
+
+/* Estilos para gráficas */
+.chart-container {
+    background: #ffffff;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+}
+.chart-container h3 {
+    font-size: 18px;
+    color: #1f2937;
+    margin-bottom: 10px;
+}
 </style>
 </head>
 
@@ -147,44 +164,50 @@ header h1{
 </div>
 
 <div class="kpi-grid">
-
+    <!-- KPIs existentes -->
     <div class="kpi-card highlight">
         <div class="kpi-label">TOTAL KM RECORRIDOS</div>
         <div class="kpi-value highlight" id="kpiTotal">0 km</div>
         <div class="kpi-subvalue">Acumulado del periodo</div>
     </div>
-
     <div class="kpi-card">
         <div class="kpi-label">KM PERMITIDOS</div>
         <div class="kpi-value" id="kpiPermitido">0 km</div>
         <div class="kpi-subvalue">Límite establecido</div>
     </div>
-
     <div class="kpi-card highlight">
         <div class="kpi-label">MARGEN DISPONIBLE</div>
         <div class="kpi-value highlight" id="kpiMargen">0 km</div>
         <div class="kpi-subvalue">Disponible vs permitido</div>
     </div>
-
     <div class="kpi-card">
         <div class="kpi-label">KM DE SERVICIO</div>
         <div class="kpi-value" id="kpiServicio">0 km</div>
         <div class="kpi-subvalue" id="pctServicio"></div>
     </div>
-
     <div class="kpi-card">
         <div class="kpi-label">KM MTTO / CARGA / RH / SEG</div>
         <div class="kpi-value" id="kpiMtto">0 km</div>
         <div class="kpi-subvalue" id="pctMtto"></div>
     </div>
-
     <div class="kpi-card warning">
         <div class="kpi-label">KM INEFICIENTE (VACÍO)</div>
         <div class="kpi-value" id="kpiVacio">0 km</div>
         <div class="kpi-subvalue" id="pctVacio"></div>
     </div>
-
 </div>
+
+<!-- Contenedores para gráficas -->
+<div class="chart-container">
+    <h3>Progreso Acumulado Diario vs Objetivo</h3>
+    <canvas id="chartProgreso"></canvas>
+</div>
+
+<div class="chart-container">
+    <h3>Distribución Diaria de KM por Tipo</h3>
+    <canvas id="chartDistribucion"></canvas>
+</div>
+
 </section>
 
 <!-- ================= VISTA FLOTA ================= -->
@@ -267,40 +290,156 @@ async function cargarDatos(){
     });
 }
 
+// Variables globales para gráficas
+let chartProgreso, chartDistribucion;
+
 async function actualizarKPIs(){
     const unidad = unidadNegocio.value.trim().toUpperCase();
     const rows = await cargarDatos();
 
     let total=0, servicio=0, mtto=0, vacio=0, permitido=0;
+    let datosDiarios = []; // Array para datos diarios
+
+    // Calcular período
+    const hoy = new Date();
+    hoy.setDate(hoy.getDate() - 1);
+    const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    const diasEnMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate();
 
     rows.forEach(r=>{
-        if((r["UNIDAD DE NEGOCIO"]||"").trim().toUpperCase()===unidad){
+        const udn = (r["UNIDAD DE NEGOCIO"]||"").trim().toUpperCase();
+        if(udn === unidad){
+            // Datos maestros (columnas A-J)
             total    += num(r["KMS RECORRIDOS"]);
             servicio += num(r["KMS DE SERVICIOS"]);
             mtto     += num(r["KM MTTO/CARGA/RH/SEG V"]);
             vacio    += num(r["KM INEFICIENTE"]);
             if(!permitido) permitido = num(r["KM PERMITIDO"]);
+
+            // Procesar desgloses diarios (filtrar por "udn" en L o T)
+            const udnDiario = (r["udn"]||"").trim().toUpperCase();
+            if(udnDiario === unidad && r["DIA"]) {
+                const dia = num(r["DIA"]); // Número directo (1, 2, 3, etc.)
+                if(dia >= 1 && dia <= hoy.getDate()) {
+                    let kmTotal, kmServicio, kmMtto, kmVacio;
+                    if(unidad === "SETTEPI SALTILLO") {
+                        kmTotal = num(r["KMS RECORRIDOS"]); // Col N
+                        kmServicio = num(r["KMS DE SERVICIOS"]); // Col O
+                        kmMtto = num(r["KM MTTO/CARGA/RH/SEG V"]); // Col P
+                        kmVacio = num(r["KM INEFICIENTE"]); // Col Q
+                    } else if(unidad === "LIPU SALTILLO") {
+                        kmTotal = num(r["KMS RECORRIDOS"]); // Col V
+                        kmServicio = num(r["KMS DE SERVICIOS"]); // Col W
+                        kmMtto = num(r["KM MTTO/CARGA/RH/SEG V"]); // Col X
+                        kmVacio = num(r["KM INEFICIENTE"]); // Col Y
+                    }
+                    datosDiarios.push({
+                        dia: dia,
+                        kmTotal: kmTotal,
+                        servicio: kmServicio,
+                        mtto: kmMtto,
+                        vacio: kmVacio
+                    });
+                }
+            }
         }
     });
 
+    // Actualizar KPIs
     kpiTotal.innerText      = total.toLocaleString("es-MX",{maximumFractionDigits:2})+" km";
     kpiServicio.innerText  = servicio.toLocaleString("es-MX",{maximumFractionDigits:2})+" km";
     kpiMtto.innerText      = mtto.toLocaleString("es-MX",{maximumFractionDigits:2})+" km";
     kpiVacio.innerText     = vacio.toLocaleString("es-MX",{maximumFractionDigits:2})+" km";
     kpiPermitido.innerText = permitido.toLocaleString("es-MX",{maximumFractionDigits:2})+" km";
     kpiMargen.innerText    = (permitido-total).toLocaleString("es-MX",{maximumFractionDigits:2})+" km";
-
     pctServicio.innerText = total ? ((servicio/total)*100).toFixed(1)+"% del total" : "";
     pctMtto.innerText     = total ? ((mtto/total)*100).toFixed(1)+"% del total" : "";
     pctVacio.innerText    = total ? ((vacio/total)*100).toFixed(1)+"% del total" : "";
-
     headerPeriodo.innerText = periodo();
-}
 
-unidadNegocio.onchange = actualizarKPIs;
-actualizarKPIs();
-</script>
+    // Preparar datos para gráficas
+    const objetivoDiario = permitido / diasEnMes;
+    let acumuladoReal = 0, acumuladoObjetivo = 0;
+    const labels = [], realData = [], objetivoData = [];
+    const servicioData = [], mttoData = [], vacioData = [];
 
-</body>
-</html>
+    // Ordenar datos diarios por día
+    datosDiarios.sort((a,b)=>a.dia - b.dia);
 
+    for(let dia=1; dia<=hoy.getDate(); dia++) {
+        const diaData = datosDiarios.find(d=>d.dia === dia);
+        if(diaData) {
+            acumuladoReal += diaData.kmTotal;
+            servicioData.push(diaData.servicio);
+            mttoData.push(diaData.mtto);
+            vacioData.push(diaData.vacio);
+        } else {
+            servicioData.push(0);
+            mttoData.push(0);
+            vacioData.push(0);
+        }
+        acumuladoObjetivo += objetivoDiario;
+        labels.push(dia.toString());
+        realData.push(acumuladoReal);
+        objetivoData.push(acumuladoObjetivo);
+    }
+
+    // Crear/actualizar gráfica de progreso
+    const ctxProgreso = document.getElementById('chartProgreso').getContext('2d');
+    if(chartProgreso) chartProgreso.destroy();
+    chartProgreso = new Chart(ctxProgreso, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'KM Recorridos Acumulados',
+                data: realData,
+                borderColor: '#84cc16',
+                backgroundColor: 'rgba(132, 204, 22, 0.1)',
+                fill: false
+            }, {
+                label: 'Objetivo Acumulado',
+                data: objetivoData,
+                borderColor: '#f59e0b',
+                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: { title: { display: true, text: 'Día del Mes' } },
+                y: { title: { display: true, text: 'KM' } }
+            }
+        }
+    });
+
+    // Crear/actualizar gráfica de distribución
+    const ctxDistribucion = document.getElementById('chartDistribucion').getContext('2d');
+    if(chartDistribucion) chartDistribucion.destroy();
+    chartDistribucion = new Chart(ctxDistribucion, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'KM Servicio',
+                data: servicioData,
+                backgroundColor: '#84cc16'
+            }, {
+                label: 'KM MTTO/Carga/RH/Seg',
+                data: mttoData,
+                backgroundColor: '#3b82f6'
+            }, {
+                label: 'KM Ineficiente (Vacío)',
+                data: vacioData,
+                backgroundColor: '#f59e0b'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: { title: { display: true, text: 'Día del Mes' }, stacked: true },
+                y: { title: { display: true, text: 'KM' }, stacked: true }
+            }
+        }
+    });
