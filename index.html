@@ -17,7 +17,7 @@ body{
     display:flex;
 }
 
-/* ====== SIDEBAR (TU MENÚ ORIGINAL) ====== */
+/* ========== TU MISMO SIDEBAR (sin cambios) ========== */
 .sidebar{
     width:260px;
     background:#1f2937;
@@ -42,7 +42,7 @@ body{
     color:#1f2937;
 }
 
-/* ====== CONTENT ====== */
+/* ========== CONTENIDO ========== */
 .content{flex:1;padding:30px;}
 .container{max-width:1600px;margin:auto;}
 
@@ -55,17 +55,17 @@ header{
 header h1{color:#84cc16;font-size:32px;}
 .subtitle{color:#d1d5db;margin-top:6px;}
 
-/* FILTER */
-.filter-bar{margin:10px 0 18px 0;}
+.filter-bar{display:flex;margin:10px 0 18px 0;}
 .filter-bar select{
     padding:10px 14px;
     border-radius:10px;
     border:2px solid #e5e7eb;
     font-size:14px;
     font-weight:600;
+    min-width:220px;
 }
 
-/* ====== KPIs (TUS TARJETAS ORIGINALES) ====== */
+/* ========== KPIs ========== */
 .kpi-grid{
     display:grid;
     grid-template-columns:repeat(6,1fr);
@@ -91,7 +91,7 @@ header h1{color:#84cc16;font-size:32px;}
 .kpi-value.highlight{color:#84cc16}
 .kpi-subvalue{font-size:11px;color:#9ca3af;}
 
-/* ====== GRAFICAS ====== */
+/* ========== GRÁFICAS ========== */
 .chart-container {
     background:#ffffff;
     border:2px solid #e5e7eb;
@@ -99,32 +99,34 @@ header h1{color:#84cc16;font-size:32px;}
     padding:15px;
     margin-top:15px;
 }
-.row-charts{
-    display:grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap:15px;
-}
 canvas{max-height:220px;}
 
-/* ====== TABLA ====== */
+/* ========== TABLA ========== */
 table{width:100%;border-collapse:collapse;}
-th,td{border:1px solid #e5e7eb;padding:8px;font-size:12px;text-align:center;}
+th,td{
+    border:1px solid #e5e7eb;
+    padding:8px;
+    font-size:12px;
+    text-align:center;
+}
 th{background:#1f2937;color:white;}
 </style>
 </head>
 
 <body>
 
-<!-- ====== TU MENÚ ORIGINAL ====== -->
+<!-- ======= SIDEBAR ORIGINAL ======= -->
 <aside class="sidebar">
     <h2>Traxion</h2>
-    <div class="menu-item active">🚛 Kilómetros</div>
-    <div class="menu-item">🚗 Flota Vehicular</div>
-    <div class="menu-item">🚗 Dif GPS vs Cargas</div>
+    <div class="menu-item active" id="menu-km">🚛 Kilómetros</div>
+    <div class="menu-item" id="menu-flota">🚗 Flota Vehicular</div>
+    <div class="menu-item" id="menu-flota2">🚗 Dif GPS vs Cargas</div>
 </aside>
 
 <main class="content">
 <div class="container">
+
+<section id="view-kilometros">
 
 <header>
     <h1>Dashboard de Kilómetros Recorridos</h1>
@@ -138,7 +140,7 @@ th{background:#1f2937;color:white;}
     </select>
 </div>
 
-<!-- ====== KPIs COMO LOS QUERÍAS ====== -->
+<!-- ======= KPIs (TU MISMO DISEÑO) ======= -->
 <div class="kpi-grid">
     <div class="kpi-card highlight">
         <div class="kpi-label">TOTAL KM RECORRIDOS</div>
@@ -149,7 +151,7 @@ th{background:#1f2937;color:white;}
     <div class="kpi-card">
         <div class="kpi-label">KM PERMITIDOS</div>
         <div class="kpi-value" id="kpiPermitido">0 km</div>
-        <div class="kpi-subvalue">Acumulado diario (R / Z)</div>
+        <div class="kpi-subvalue">Límite establecido</div>
     </div>
 
     <div class="kpi-card highlight">
@@ -161,40 +163,29 @@ th{background:#1f2937;color:white;}
     <div class="kpi-card">
         <div class="kpi-label">KM DE SERVICIO</div>
         <div class="kpi-value" id="kpiServicio">0 km</div>
+        <div class="kpi-subvalue" id="pctServicio"></div>
     </div>
 
     <div class="kpi-card">
-        <div class="kpi-label">KM MTTO</div>
+        <div class="kpi-label">KM MTTO / CARGA / RH / SEG</div>
         <div class="kpi-value" id="kpiMtto">0 km</div>
+        <div class="kpi-subvalue" id="pctMtto"></div>
     </div>
 
     <div class="kpi-card warning">
         <div class="kpi-label">KM INEFICIENTE (VACÍO)</div>
         <div class="kpi-value" id="kpiVacio">0 km</div>
+        <div class="kpi-subvalue" id="pctVacio"></div>
     </div>
 </div>
 
-<!-- ====== TUS 3 GRÁFICAS ====== -->
-<div class="row-charts">
-    <div class="chart-container">
-        <h3>Progreso Acumulado</h3>
-        <canvas id="chartProgreso"></canvas>
-    </div>
-
-    <div class="chart-container">
-        <h3>Distribución Total (%)</h3>
-        <canvas id="chartPie"></canvas>
-    </div>
-
-    <div class="chart-container">
-        <h3>Comportamiento Diario</h3>
-        <canvas id="chartLineas"></canvas>
-    </div>
-</div>
-
-<!-- ====== TABLA SOLO UDN FILTRADA ====== -->
 <div class="chart-container">
-<h3>Tabla Consolidada (solo UDN seleccionada)</h3>
+    <h3>Progreso Acumulado Diario vs Permitido</h3>
+    <canvas id="chartProgreso"></canvas>
+</div>
+
+<div class="chart-container">
+<h3>Tabla Consolidada (SOLO UDN seleccionada)</h3>
 <table>
 <thead>
 <tr>
@@ -212,6 +203,7 @@ th{background:#1f2937;color:white;}
 </table>
 </div>
 
+</section>
 </div>
 </main>
 
@@ -233,13 +225,13 @@ async function cargarDatos(){
     });
 }
 
-let chartProgreso, chartPie, chartLineas;
+let chartProgreso;
 
 async function actualizar(){
     const unidad = unidadNegocio.value.trim().toUpperCase();
     const rows = await cargarDatos();
 
-    let total=0, servicio=0, mtto=0, vacio=0, permitidoTotal=0;
+    let total=0, servicio=0, mtto=0, vacio=0, permitido=0;
     let datosDiarios = [];
     let tablaMap = {};
 
@@ -247,126 +239,95 @@ async function actualizar(){
     hoy.setDate(hoy.getDate()-1);
 
     rows.forEach(r=>{
-        const udn = (r[0]||"").trim().toUpperCase();
 
-        // ---- KPIs MAESTROS (tus columnas originales) ----
-        if(udn === unidad){
-            total += num(r[4]);
-            servicio += num(r[5]);
-            mtto += num(r[6]);
-            vacio += num(r[7]);
-        }
+        const udnDiario = (r[11]||r[19]||"").trim().toUpperCase();
+        const dia = num(r[12]||r[20]);
 
-        const diaSet = num(r[12]);
-        const diaLipu = num(r[20]);
+        if(udnDiario === unidad && dia>=1 && dia<=hoy.getDate()){
 
-        // ---- DIARIOS CON TUS COLUMNAS REALES ----
-        if(unidad==="SETTEPI SALTILLO" && diaSet>=1 && diaSet<=hoy.getDate()){
-            datosDiarios.push({
-                dia: diaSet,
-                kmTotal: num(r[13]),
-                kmServ: num(r[14]),
-                kmMtto: num(r[15]),
-                kmVac: num(r[16]),
-                kmPermitido: num(r[17]), // <-- COLUMNA R
-                gerente:r[1], jefe:r[2], cliente:r[3]
-            });
-        }
+            let kmTotal, kmServ, kmMtto, kmVac, kmPerm;
 
-        if(unidad==="LIPU SALTILLO" && diaLipu>=1 && diaLipu<=hoy.getDate()){
-            datosDiarios.push({
-                dia: diaLipu,
-                kmTotal: num(r[21]),
-                kmServ: num(r[22]),
-                kmMtto: num(r[23]),
-                kmVac: num(r[24]),
-                kmPermitido: num(r[25]), // <-- COLUMNA Z
-                gerente:r[1], jefe:r[2], cliente:r[3]
-            });
+            if(unidad==="SETTEPI SALTILLO"){
+                kmTotal = num(r[13]); // N
+                kmServ  = num(r[14]); // O
+                kmMtto  = num(r[15]); // P
+                kmVac   = num(r[16]); // Q
+                kmPerm  = num(r[17]); // R  <-- PERMITIDO SETTEPI
+            } else {
+                kmTotal = num(r[21]); // V
+                kmServ  = num(r[22]); // W
+                kmMtto  = num(r[23]); // X
+                kmVac   = num(r[24]); // Y
+                kmPerm  = num(r[25]); // Z  <-- PERMITIDO LIPU
+            }
+
+            total += kmTotal;
+            servicio += kmServ;
+            mtto += kmMtto;
+            vacio += kmVac;
+            permitido += kmPerm;
+
+            datosDiarios.push({dia, kmTotal, kmPerm});
+
+            const gerente = r[1]||"SIN GERENTE";
+            const jefe = r[2]||"SIN JEFE";
+            const cliente = r[3]||"SIN CLIENTE";
+            const key = gerente+"|"+jefe+"|"+cliente;
+
+            if(!tablaMap[key]){
+                tablaMap[key]={gerente,jefe,cliente,rec:0,serv:0,mtto:0,ine:0};
+            }
+
+            tablaMap[key].rec += kmTotal;
+            tablaMap[key].serv += kmServ;
+            tablaMap[key].mtto += kmMtto;
+            tablaMap[key].ine += kmVac;
         }
     });
 
-    datosDiarios.sort((a,b)=>a.dia-b.dia);
-
-    let realAc=0, perAc=0;
-    let labels=[], realData=[], perData=[];
-
-    datosDiarios.forEach(d=>{
-        realAc += d.kmTotal;
-        perAc += d.kmPermitido;
-        permitidoTotal += d.kmPermitido; // <- acumulado correcto
-
-        labels.push(d.dia);
-        realData.push(realAc);
-        perData.push(perAc);
-
-        const key = d.gerente+"|"+d.jefe+"|"+d.cliente;
-
-        if(!tablaMap[key]){
-            tablaMap[key]={gerente:d.gerente,jefe:d.jefe,cliente:d.cliente,
-                           rec:0,serv:0,mtto:0,ine:0};
-        }
-        tablaMap[key].rec += d.kmTotal;
-        tablaMap[key].serv += d.kmServ;
-        tablaMap[key].mtto += d.kmMtto;
-        tablaMap[key].ine += d.kmVac;
-    });
-
-    // ====== KPIs EN PANTALLA ======
+    /* ====== KPIs (CORRECTOS) ====== */
     kpiTotal.innerText = total.toLocaleString()+" km";
     kpiServicio.innerText = servicio.toLocaleString()+" km";
     kpiMtto.innerText = mtto.toLocaleString()+" km";
     kpiVacio.innerText = vacio.toLocaleString()+" km";
-    kpiPermitido.innerText = permitidoTotal.toLocaleString()+" km";
+    kpiPermitido.innerText = permitido.toLocaleString()+" km";
 
-    const margen = permitidoTotal - total;
+    const margen = permitido - total;
     kpiMargen.innerText = margen.toLocaleString()+" km";
 
-    const pct = permitidoTotal ? ((margen/permitidoTotal)*100).toFixed(1) : 0;
+    const pct = permitido ? ((margen/permitido)*100).toFixed(1) : 0;
     const importe = (margen*6).toLocaleString("es-MX",{style:"currency",currency:"MXN"});
     txtMargen.innerHTML = `${pct}% de los KM permitidos.<br>Equivale a: ${importe}`;
 
     headerPeriodo.innerText = "Periodo al día "+hoy.getDate();
 
-    // ====== GRÁFICA 1 (LINEAL) ======
+    /* ====== GRAFICA 1 (ACUMULADO REAL vs PERMITIDO) ====== */
+    datosDiarios.sort((a,b)=>a.dia-b.dia);
+
+    let labels=[], realAc=0, perAc=0;
+    let realData=[], perData=[];
+
+    datosDiarios.forEach(d=>{
+        realAc += d.kmTotal;
+        perAc += d.kmPerm;
+        labels.push(d.dia);
+        realData.push(realAc);
+        perData.push(perAc);
+    });
+
     if(chartProgreso) chartProgreso.destroy();
     chartProgreso = new Chart(document.getElementById("chartProgreso"),{
-        type:"line",
-        data:{labels,
-            datasets:[
-            {label:"KM Real Acumulado",data:realData,borderColor:"#84cc16"},
-            {label:"KM Permitido Acumulado",data:perData,borderColor:"#1f2937"}
-        ]}
-    });
-
-    // ====== PIE ======
-    if(chartPie) chartPie.destroy();
-    chartPie = new Chart(document.getElementById("chartPie"),{
-        type:"pie",
-        data:{
-            labels:["Servicio","Mtto","Vacío"],
-            datasets:[{
-                data:[servicio,mtto,vacio],
-                backgroundColor:["#84cc16","#9ca3af","#f59e0b"]
-            }]
-        }
-    });
-
-    // ====== LINEAS DIARIAS ======
-    if(chartLineas) chartLineas.destroy();
-    chartLineas = new Chart(document.getElementById("chartLineas"),{
         type:"line",
         data:{
             labels,
             datasets:[
-                {label:"Servicio",data:datosDiarios.map(d=>d.kmServ),borderColor:"#84cc16"},
-                {label:"Mtto",data:datosDiarios.map(d=>d.kmMtto),borderColor:"#9ca3af"},
-                {label:"Vacío",data:datosDiarios.map(d=>d.kmVac),borderColor:"#f59e0b"}
+                {label:"KM Real Acumulado",data:realData,borderColor:"#84cc16"},
+                {label:"KM Permitido Acumulado",data:perData,borderColor:"#1f2937"}
             ]
         }
     });
 
-    // ====== TABLA SOLO UDN FILTRADA ======
+    /* ====== TABLA (SOLO UDN FILTRADA) ====== */
     let tabla = Object.values(tablaMap).map(r=>{
         let pctVac = r.rec ? (r.ine/r.rec*100) : 0;
         return {...r, pctVac};
