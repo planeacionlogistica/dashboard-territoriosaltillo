@@ -297,6 +297,29 @@ canvas{
         </div>
     </div>
 
+    <!-- Tabla de Detalle -->
+    <div class="chart-container">
+        <h3>Detalle por Cliente</h3>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Unidad de Negocio</th>
+                        <th>Gerente de OP</th>
+                        <th>Jefe de OP</th>
+                        <th>Cliente</th>
+                        <th>KM Recorridos</th>
+                        <th>KM de Servicios</th>
+                        <th>KM Mtto/Carga/RH/Seg</th>
+                        <th>KM Ineficiente</th>
+                        <th>% Vacío</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaDetalle"></tbody>
+            </table>
+        </div>
+    </div>
+
     </main>
 </div>
 
@@ -306,7 +329,8 @@ const SHEET_NAME = "Kilometros";
 
 function num(v){
     if(!v) return 0;
-    let str = v.toString().replace(/,/g,"").trim();
+    // Eliminar $, comas, espacios y convertir a número
+    let str = v.toString().replace(/[$,\s]/g,"").trim();
     return Number(str) || 0;
 }
 
@@ -326,7 +350,7 @@ async function actualizar(){
     const rows = await cargarDatos();
 
     const hoy = new Date();
-    const diaActual = hoy.getDate(); // Cambiado: ahora es 20, no 19
+    const diaActual = hoy.getDate() - 1; // Día 19, vamos desfasados 1 día
 
     // ===== KPIs desde la PRIMERA TABLA (A-J) =====
     // SUMAR todas las filas que corresponden a la unidad
@@ -400,7 +424,7 @@ async function actualizar(){
         }
         
         // Solo agregar si encontró datos válidos y el día es válido
-        if(encontrado && dia >= 1 && dia < diaActual){
+        if(encontrado && dia >= 1 && dia <= diaActual){
             datosDiarios.push({dia, kmTotal, kmServ, kmMtto, kmVac, kmPermDiario});
             
             // Debug para el primer día
