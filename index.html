@@ -352,6 +352,10 @@ async function actualizar(){
     const hoy = new Date();
     const diaActual = hoy.getDate() - 1; // Día 19, vamos desfasados 1 día
 
+    console.log('🔄 INICIANDO ACTUALIZACIÓN');
+    console.log('Unidad seleccionada:', unidad);
+    console.log('Filas cargadas del Excel:', rows.length);
+
     // ===== KPIs desde la PRIMERA TABLA (A-J) =====
     // SUMAR todas las filas que corresponden a la unidad
     let total=0, servicio=0, mtto=0, vacio=0, permitidoTotal=0;
