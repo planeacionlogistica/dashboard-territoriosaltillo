@@ -282,7 +282,7 @@ canvas{
     <!-- Gráficas -->
     <div class="chart-row">
         <div class="chart-container">
-            <h3>Progreso Acumulado Diario vs Permitido</h3>
+            <h3>KM Recorridos vs Permitido por Día</h3>
             <canvas id="chartProgreso"></canvas>
         </div>
 
@@ -329,7 +329,7 @@ async function actualizar(){
     const diaActual = hoy.getDate() - 1;
 
     // ===== KPIs desde la PRIMERA TABLA (A-J) =====
-    // Buscar la fila que corresponde a la unidad
+    // SUMAR todas las filas que corresponden a la unidad
     let total=0, servicio=0, mtto=0, vacio=0, permitidoTotal=0;
     
     // KM Permitido Total de fila 7
@@ -341,17 +341,23 @@ async function actualizar(){
         }
     }
 
-    // Buscar KPIs en columnas A-J (primera tabla)
+    // SUMAR todos los KPIs en columnas A-J (primera tabla)
     for(let i = 1; i < rows.length; i++){
         const r = rows[i];
-        const udnRow = (r[0]||"").toString().trim();
+        const udnRow = (r[0]||"").toString().trim().toUpperCase();
         
-        if(udnRow.toUpperCase() === unidad.toUpperCase()){
-            total = num(r[4]);      // Columna E - KM Total
-            servicio = num(r[5]);   // Columna F - KM Servicio
-            mtto = num(r[6]);       // Columna G - KM Mtto
-            vacio = num(r[7]);      // Columna H - KM Vacío
-            break;
+        // Si la columna A contiene la UDN, sumar esa fila
+        if(udnRow.includes("SETTEPI") && unidad === "SETTEPI SALTILLO"){
+            total += num(r[4]);      // Columna E - KM Total
+            servicio += num(r[5]);   // Columna F - KM Servicio
+            mtto += num(r[6]);       // Columna G - KM Mtto
+            vacio += num(r[7]);      // Columna H - KM Vacío
+        }
+        else if(udnRow.includes("LIPU") && unidad === "LIPU SALTILLO"){
+            total += num(r[4]);      // Columna E - KM Total
+            servicio += num(r[5]);   // Columna F - KM Servicio
+            mtto += num(r[6]);       // Columna G - KM Mtto
+            vacio += num(r[7]);      // Columna H - KM Vacío
         }
     }
 
@@ -364,24 +370,26 @@ async function actualizar(){
         let dia=0, kmTotal=0, kmServ=0, kmMtto=0, kmVac=0, kmPermDiario=0;
         
         if(unidad === "SETTEPI SALTILLO"){
+            // Tabla SETTEPI: columnas L a R (índices 11-17)
             const udnSettepi = (r[11]||"").toString().trim();
-            if(udnSettepi.toUpperCase().includes("SETTEPI")){
-                dia = num(r[12]);           // M
-                kmTotal = num(r[13]);       // N
-                kmServ  = num(r[14]);       // O
-                kmMtto  = num(r[15]);       // P
-                kmVac   = num(r[16]);       // Q
-                kmPermDiario = num(r[17]);  // R
+            if(udnSettepi.toUpperCase() === "SETTEPI"){
+                dia = num(r[12]);           // M - Día
+                kmTotal = num(r[13]);       // N - KM Recorridos
+                kmServ  = num(r[14]);       // O - KM Servicios
+                kmMtto  = num(r[15]);       // P - KM Mtto
+                kmVac   = num(r[16]);       // Q - KM Ineficiente
+                kmPermDiario = num(r[17]);  // R - KM Permitido
             }
         } else {
+            // Tabla LIPU: columnas T a Z (índices 19-25)
             const udnLipu = (r[19]||"").toString().trim();
-            if(udnLipu.toUpperCase().includes("LIPU")){
-                dia = num(r[20]);           // U
-                kmTotal = num(r[21]);       // V
-                kmServ  = num(r[22]);       // W
-                kmMtto  = num(r[23]);       // X
-                kmVac   = num(r[24]);       // Y
-                kmPermDiario = num(r[25]);  // Z
+            if(udnLipu.toUpperCase() === "LIPU"){
+                dia = num(r[20]);           // U - Día
+                kmTotal = num(r[21]);       // V - KM Recorridos
+                kmServ  = num(r[22]);       // W - KM Servicios
+                kmMtto  = num(r[23]);       // X - KM Mtto
+                kmVac   = num(r[24]);       // Y - KM Ineficiente
+                kmPermDiario = num(r[25]);  // Z - KM Permitido
             }
         }
         
@@ -414,52 +422,37 @@ async function actualizar(){
 
     headerPeriodo.innerText = `Periodo al día ${diaActual} - ${unidad}`;
 
-    // ====== GRÁFICA 1: Progreso Acumulado ======
+    // ====== GRÁFICA 1: Progreso Diario (NO acumulado) - KM Recorrido vs Permitido por día ======
     datosDiarios.sort((a,b)=>a.dia-b.dia);
 
-    let labels=[], realAc=0, perAc=0;
-    let realData=[], perData=[];
+    let labels=[];
+    let realDiario=[], perDiario=[];
 
     datosDiarios.forEach(d=>{
-        realAc += d.kmTotal;
-        perAc += d.kmPermDiario;
         labels.push("Día "+d.dia);
-        realData.push(realAc);
-        perData.push(perAc);
+        realDiario.push(d.kmTotal);          // KM del día
+        perDiario.push(d.kmPermDiario);      // KM permitido del día
     });
 
     if(chartProgreso) chartProgreso.destroy();
     chartProgreso = new Chart(document.getElementById("chartProgreso"),{
-        type:"line",
+        type:"bar",
         data:{
             labels,
             datasets:[
                 {
-                    label:"KM Real Acumulado",
-                    data:realData,
+                    label:"KM Recorridos por Día",
+                    data:realDiario,
+                    backgroundColor:"rgba(132,204,22,0.8)",
                     borderColor:"#84cc16",
-                    backgroundColor:"rgba(132,204,22,0.15)",
-                    borderWidth:3,
-                    tension:0.3,
-                    fill:true,
-                    pointRadius:5,
-                    pointBackgroundColor:"#84cc16",
-                    pointBorderColor:"#fff",
-                    pointBorderWidth:2
+                    borderWidth:2
                 },
                 {
-                    label:"KM Permitido Acumulado",
-                    data:perData,
+                    label:"KM Permitido por Día",
+                    data:perDiario,
+                    backgroundColor:"rgba(31,41,55,0.6)",
                     borderColor:"#1f2937",
-                    backgroundColor:"transparent",
-                    borderWidth:3,
-                    tension:0.3,
-                    fill:false,
-                    pointRadius:5,
-                    pointBackgroundColor:"#1f2937",
-                    pointBorderColor:"#fff",
-                    pointBorderWidth:2,
-                    borderDash:[8,4]
+                    borderWidth:2
                 }
             ]
         },
@@ -475,12 +468,20 @@ async function actualizar(){
         }
     });
 
-    // ====== GRÁFICA 2: Distribución (Donut) ======
+    // ====== GRÁFICA 2: Distribución con PORCENTAJES (de la primera tabla - totales) ======
+    const pctServTotal = total > 0 ? ((servicio/total)*100).toFixed(1) : 0;
+    const pctMttoTotal = total > 0 ? ((mtto/total)*100).toFixed(1) : 0;
+    const pctVacTotal = total > 0 ? ((vacio/total)*100).toFixed(1) : 0;
+
     if(chartDistribucion) chartDistribucion.destroy();
     chartDistribucion = new Chart(document.getElementById("chartDistribucion"),{
         type:"doughnut",
         data:{
-            labels:["Servicio","Mtto","Vacío"],
+            labels:[
+                `Servicio (${pctServTotal}%)`,
+                `Mtto (${pctMttoTotal}%)`,
+                `Vacío (${pctVacTotal}%)`
+            ],
             datasets:[{
                 data:[servicio, mtto, vacio],
                 backgroundColor:["#84cc16","#f59e0b","#ef4444"],
@@ -497,6 +498,15 @@ async function actualizar(){
                     display:true,
                     position:'bottom',
                     labels:{font:{size:12,weight:'bold'},padding:15}
+                },
+                tooltip:{
+                    callbacks:{
+                        label: function(context){
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            return label + ': ' + value.toLocaleString() + ' km';
+                        }
+                    }
                 }
             },
             cutout:'60%'
