@@ -470,6 +470,100 @@ async function actualizar(){
 
     headerPeriodo.innerText = `Periodo al día ${diaActual} - ${unidad}`;
 
+    // ====== CONSTRUIR TABLA PRIMERO ======
+    console.log('===== CONSTRUYENDO TABLA =====');
+    console.log('Unidad seleccionada:', unidad);
+    console.log('Total de filas en Excel:', rows.length);
+    
+    const tablaBody = document.getElementById('tablaDetalle');
+    if(!tablaBody){
+        console.error('❌ No se encontró el elemento tablaDetalle');
+    } else {
+        console.log('✓ Elemento tablaDetalle encontrado');
+        
+        tablaBody.innerHTML = '';
+        
+        let filasFiltradas = [];
+        let filasRevisadas = 0;
+        
+        // Leer todas las filas de la primera tabla (A-I)
+        for(let i = 1; i < rows.length; i++){
+            const r = rows[i];
+            if(!r || r.length < 9) continue;
+            
+            const udnRow = (r[0]||"").toString().trim();
+            filasRevisadas++;
+            
+            // Debug primeras 3 filas
+            if(i <= 3){
+                console.log(`Fila ${i}: UDN="${udnRow}", Gerente="${r[1]}", Cliente="${r[3]}"`);
+            }
+            
+            const udnUpper = udnRow.toUpperCase();
+            let coincide = false;
+            
+            if(unidad === "SETTEPI SALTILLO"){
+                coincide = udnUpper.includes("SETTEPI");
+            } else if(unidad === "LIPU SALTILLO"){
+                coincide = udnUpper.includes("LIPU");
+            }
+            
+            if(coincide){
+                filasFiltradas.push({
+                    udn: udnRow,
+                    gerente: r[1]||"-",
+                    jefe: r[2]||"-",
+                    cliente: r[3]||"-",
+                    kmRecorridos: num(r[4]),
+                    kmServicios: num(r[5]),
+                    kmMtto: num(r[6]),
+                    kmIneficiente: num(r[7]),
+                    pctVacio: (r[8]||"0%").toString()
+                });
+            }
+        }
+        
+        console.log(`✓ Filas revisadas: ${filasRevisadas}`);
+        console.log(`✓ Filas que coinciden con ${unidad}: ${filasFiltradas.length}`);
+        
+        if(filasFiltradas.length > 0){
+            console.log('Primera fila filtrada:', filasFiltradas[0]);
+            
+            // Ordenar por % Vacío descendente
+            filasFiltradas.sort((a,b)=>{
+                const pctA = parseFloat(a.pctVacio.replace('%','').replace(',','.')) || 0;
+                const pctB = parseFloat(b.pctVacio.replace('%','').replace(',','.')) || 0;
+                return pctB - pctA;
+            });
+            
+            // Renderizar tabla
+            let html = '';
+            filasFiltradas.forEach((f)=>{
+                const pctNum = parseFloat(f.pctVacio.replace('%','').replace(',','.')) || 0;
+                const rowClass = pctNum > 25 ? 'highlight-row' : '';
+                
+                html += `
+                <tr class="${rowClass}">
+                    <td>${f.udn}</td>
+                    <td>${f.gerente}</td>
+                    <td>${f.jefe}</td>
+                    <td>${f.cliente}</td>
+                    <td style="text-align:right;font-weight:600;">${f.kmRecorridos.toLocaleString()}</td>
+                    <td style="text-align:right;">${f.kmServicios.toLocaleString()}</td>
+                    <td style="text-align:right;">${f.kmMtto.toLocaleString()}</td>
+                    <td style="text-align:right;">${f.kmIneficiente.toLocaleString()}</td>
+                    <td style="font-weight:700;color:${pctNum > 25 ? '#dc2626' : '#059669'};">${f.pctVacio}</td>
+                </tr>`;
+            });
+            
+            tablaBody.innerHTML = html;
+            console.log('✓ Tabla renderizada con', filasFiltradas.length, 'filas');
+        } else {
+            tablaBody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:#6b7280;">No se encontraron registros para esta UDN</td></tr>';
+            console.warn('⚠️ No se encontraron filas para la UDN seleccionada');
+        }
+    }
+
     // ====== GRÁFICA 1: KM por Día - Recorrido vs Permitido (LÍNEAS) ======
     datosDiarios.sort((a,b)=>a.dia-b.dia);
 
