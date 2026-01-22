@@ -444,6 +444,12 @@ canvas{
                 <thead>
                     <tr>
                         <th>UDN</th>
+                        <th>Gerente</th>
+                        <th>Jefe</th>
+                        <th>Año</th>
+                        <th>Mes</th>
+                        <th>Sem</th>
+                        <th>Día</th>
                         <th>Operador</th>
                         <th>Cliente</th>
                         <th colspan="5" style="background:#dc2626;color:white;">EVENTOS CRÍTICOS</th>
@@ -452,7 +458,7 @@ canvas{
                         <th style="background:#1f2937;color:#84cc16;">SCORE</th>
                     </tr>
                     <tr style="background:#f9fafb;">
-                        <th colspan="3"></th>
+                        <th colspan="9"></th>
                         <th style="font-size:10px;">Acel</th>
                         <th style="font-size:10px;">Freno</th>
                         <th style="font-size:10px;">Giro D</th>
@@ -742,31 +748,16 @@ async function actualizar(){
                 const rowClass = pctNum > 25 ? 'highlight-row' : '';
                 
                 html += `
-                               <tr>
-                    <td>${d.udn}</td>
-                    <td style="font-weight:600;">${d.operador}</td>
-                    <td>${d.cliente}</td>
-                
-                    <td style="${colorEvento(d.critAcel)}">${d.critAcel}</td>
-                    <td style="${colorEvento(d.critFreno)}">${d.critFreno}</td>
-                    <td style="${colorEvento(d.critGiroD)}">${d.critGiroD}</td>
-                    <td style="${colorEvento(d.critGiroI)}">${d.critGiroI}</td>
-                    <td style="${colorEvento(d.critVeloc)}">${d.critVeloc}</td>
-                
-                    <td style="${colorEvento(d.modAcel)}">${d.modAcel}</td>
-                    <td style="${colorEvento(d.modFreno)}">${d.modFreno}</td>
-                    <td style="${colorEvento(d.modGiroD)}">${d.modGiroD}</td>
-                    <td style="${colorEvento(d.modGiroI)}">${d.modGiroI}</td>
-                    <td style="${colorEvento(d.modVeloc)}">${d.modVeloc}</td>
-                
-                    <td style="${colorEvento(d.levFreno)}">${d.levFreno}</td>
-                    <td style="${colorEvento(d.levGiroD)}">${d.levGiroD}</td>
-                    <td style="${colorEvento(d.levGiroI)}">${d.levGiroI}</td>
-                    <td style="${colorEvento(d.levVeloc)}">${d.levVeloc}</td>
-                
-                    <td style="background:${scoreColor};color:white;font-weight:800;">
-                        ${d.score.toFixed(1)}
-                    </td>
+                <tr class="${rowClass}">
+                    <td>${f.udn}</td>
+                    <td>${f.gerente}</td>
+                    <td>${f.jefe}</td>
+                    <td>${f.cliente}</td>
+                    <td style="text-align:right;font-weight:600;">${f.kmRecorridos.toLocaleString()}</td>
+                    <td style="text-align:right;">${f.kmServicios.toLocaleString()}</td>
+                    <td style="text-align:right;">${f.kmMtto.toLocaleString()}</td>
+                    <td style="text-align:right;">${f.kmIneficiente.toLocaleString()}</td>
+                    <td style="font-weight:700;color:${pctNum > 25 ? '#dc2626' : '#059669'};">${f.pctVacio}</td>
                 </tr>`;
             });
             
@@ -1086,42 +1077,35 @@ async function cargarScoreSeg(){
                 if(!r || r.length < 24) continue;
                 
                 datosScoreSeg.push({
-                            // === PARA FILTROS (NO SE MUESTRAN) ===
-                            udn: r[0] || "",
-                            gerente: r[1] || "",
-                            jefe: r[2] || "",
-                            anio: r[3] || "",
-                            mes: r[4] || "",
-                            sem: r[5] || "",
-                            dia: r[6] || "",
-                        
-                            // === VISIBLES ===
-                            operador: r[7] || "",
-                            cliente: r[8] || "",
-                        
-                            // === EVENTOS CRÍTICOS (J-N) ===
-                            critAcel: num(r[9]),
-                            critFreno: num(r[10]),
-                            critGiroD: num(r[11]),
-                            critGiroI: num(r[12]),
-                            critVeloc: num(r[13]),
-                        
-                            // === EVENTOS MODERADOS (O-S) ===
-                            modAcel: num(r[14]),
-                            modFreno: num(r[15]),
-                            modGiroD: num(r[16]),
-                            modGiroI: num(r[17]),
-                            modVeloc: num(r[18]),
-                        
-                            // === EVENTOS LEVES (T-W) ===
-                            levFreno: num(r[19]),
-                            levGiroD: num(r[20]),
-                            levGiroI: num(r[21]),
-                            levVeloc: num(r[22]),
-                        
-                            // === SCORE ===
-                            score: num(r[23])
-                        });
+                    udn: r[0]||"",
+                    gerente: r[1]||"",
+                    jefe: r[2]||"",
+                    anio: r[3]||"",
+                    mes: r[4]||"",
+                    sem: r[5]||"",
+                    dia: r[6]||"",
+                    operador: r[7]||"",
+                    cliente: r[8]||"",
+                    // Eventos Críticos (J-N, índices 9-13)
+                    critAcel: num(r[9]),
+                    critFreno: num(r[10]),
+                    critGiroD: num(r[11]),
+                    critGiroI: num(r[12]),
+                    critVeloc: num(r[13]),
+                    // Eventos Moderados (O-S, índices 14-18)
+                    modAcel: num(r[14]),
+                    modFreno: num(r[15]),
+                    modGiroD: num(r[16]),
+                    modGiroI: num(r[17]),
+                    modVeloc: num(r[18]),
+                    // Eventos Leves (T-W, índices 19-22)
+                    levFreno: num(r[19]),
+                    levGiroD: num(r[20]),
+                    levGiroI: num(r[21]),
+                    levVeloc: num(r[22]),
+                    // Score (X, índice 23)
+                    score: num(r[23])
+                });
             }
             
             console.log(`✓ Score Seg cargado: ${datosScoreSeg.length} registros`);
@@ -1306,5 +1290,3 @@ function exportarScoreExcel(){
 
 </body>
 </html>
-
-
