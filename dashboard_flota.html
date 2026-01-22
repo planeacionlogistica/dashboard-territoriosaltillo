@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Traxion</title>
+
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+    font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+    background:#f3f4f6;
+    color:#1f2937;
+    min-height:100vh;
+}
+
+.container-fluid{
+    display:flex;
+    flex-wrap:wrap;
+}
+
+.sidebar{
+    width:260px;
+    background:#1f2937;
+    min-height:100vh;
+    padding:25px 20px;
+}
+.sidebar h2{
+    color:#84cc16;
+    text-align:center;
+    margin-bottom:30px;
+    font-size:28px;
+}
+.menu-item{
+    padding:14px 18px;
+    border-radius:10px;
+    margin-bottom:12px;
+    color:#d1d5db;
+    font-weight:600;
+    cursor:pointer;
+    transition:all 0.3s;
+}
+.menu-item:hover{
+    background:#374151;
+}
+.menu-item.active{
+    background:#84cc16;
+    color:#1f2937;
+}
+
+.content{
+    flex:1;
+    padding:30px;
+    min-width:0;
+}
+
+header{
+    background:linear-gradient(135deg,#1f2937,#374151);
+    padding:30px;
+    border-radius:14px;
+    margin-bottom:20px;
+}
+header h1{
+    color:#84cc16;
+    font-size:32px;
+    margin-bottom:8px;
+}
+.subtitle{
+    color:#d1d5db;
+    font-size:16px;
+}
+
+.filter-bar{
+    margin:0 0 20px 0;
+}
+.filter-bar select{
+    padding:12px 16px;
+    border-radius:10px;
+    border:2px solid #e5e7eb;
+    font-size:15px;
+    font-weight:600;
+    min-width:250px;
+    background:#ffffff;
+    cursor:pointer;
+    transition:border 0.3s;
+}
+.filter-bar select:focus{
+    outline:none;
+    border-color:#84cc16;
+}
+
+.kpi-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
+    gap:18px;
+    margin-bottom:25px;
+}
+
+.kpi-card{
+    background:#ffffff;
+    border:2px solid #e5e7eb;
+    border-radius:12px;
+    padding:20px;
+    transition:transform 0.2s, box-shadow 0.2s;
+}
+.kpi-card:hover{
+    transform:translateY(-2px);
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+}
+.kpi-card.highlight{
+    border-left:5px solid #84cc16;
+}
+.kpi-card.warning{
+    border-left:5px solid #f59e0b;
+}
+
+.kpi-label{
+    font-size:11px;
+    font-weight:700;
+    color:#6b7280;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    margin-bottom:8px;
+}
+.kpi-value{
+    font-size:28px;
+    font-weight:800;
+    color:#1f2937;
+    margin:8px 0;
+}
+.kpi-value.highlight{
+    color:#84cc16;
+}
+.kpi-subvalue{
+    font-size:12px;
+    color:#9ca3af;
+    margin-top:6px;
+    line-height:1.4;
+}
+
+.chart-row{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(400px, 1fr));
+    gap:20px;
+    margin-bottom:25px;
+}
+
+.chart-container{
+    background:#ffffff;
+    border:2px solid #e5e7eb;
+    border-radius:12px;
+    padding:20px;
+    transition:transform 0.2s, box-shadow 0.2s;
+}
+.chart-container:hover{
+    transform:translateY(-2px);
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+}
+.chart-container h3{
+    font-size:16px;
+    font-weight:700;
+    margin-bottom:15px;
+    color:#1f2937;
+    padding-bottom:10px;
+    border-bottom:2px solid #84cc16;
+}
+canvas{
+    max-height:280px;
+}
+
+@media (max-width: 1400px){
+    .kpi-grid{
+        grid-template-columns:repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 1024px){
+    .sidebar{
+        width:100%;
+        min-height:auto;
+    }
+    .container-fluid{
+        flex-direction:column;
+    }
+    .kpi-grid{
+        grid-template-columns:repeat(2, 1fr);
+    }
+    .chart-row{
+        grid-template-columns:1fr;
+    }
+}
+
+@media (max-width: 640px){
+    .content{
+        padding:15px;
+    }
+    header{
+        padding:20px;
+    }
+    header h1{
+        font-size:24px;
+    }
+    .kpi-grid{
+        grid-template-columns:1fr;
+    }
+    .kpi-value{
+        font-size:24px;
+    }
+    .filter-bar select{
+        width:100%;
+    }
+}
+</style>
+<link rel="stylesheet" href="flota.css">
+</head>
+
+<body>
+<section id="seccion-flota" class="seccion-dashboard" style="display:none;">
+
+    <header>
+        <h1>Dashboard de Flota Vehicular</h1>
+        <p class="subtitle">Gestión y monitoreo de vehículos</p>
+    </header>
+
+    <div style="text-align:center;padding:100px 20px;">
+        <h2 style="color:#84cc16;font-size:48px;margin-bottom:20px;">🚗</h2>
+        <h3 style="color:#6b7280;font-size:24px;margin-bottom:10px;">Sección en construcción</h3>
+        <p style="color:#9ca3af;font-size:16px;">Aquí irá el contenido de Flota Vehicular</p>
+        <p style="color:#9ca3af;font-size:14px;margin-top:20px;">
+            Dime qué KPIs, gráficas y tablas necesitas para esta sección
+        </p>
+    </div>
+
+    </section>
+<script src="flota.js"></script>
+</body>
+</html>
