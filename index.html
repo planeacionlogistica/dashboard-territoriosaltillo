@@ -1065,44 +1065,48 @@ async function cargarScoreSeg(){
             const rows = results.data;
             datosScoreSeg = [];
             
+            console.log('Primera fila (encabezados):', rows[0]);
+            console.log('Segunda fila (primer dato):', rows[1]);
+            
             // Leer desde fila 2 (índice 1) para saltar encabezados
             for(let i = 1; i < rows.length; i++){
                 const r = rows[i];
                 if(!r || r.length < 24) continue;
                 
-              datosScoreSeg.push({
-                    udn: r[0]||"",              // Columna A
-                    gerente: r[1]||"",          // Columna B (solo para filtrar)
-                    jefe: r[2]||"",             // Columna C (solo para filtrar)
-                    cliente: r[3]||"",          // Columna D (solo para filtrar)
-                    anio: r[4]||"",             // Columna E (solo para filtrar)
-                    mes: r[5]||"",              // Columna F (solo para filtrar)
-                    sem: r[6]||"",              // Columna G (solo para filtrar)
-                    dia: r[7]||"",              // Columna H (solo para filtrar)
-                    operador: r[8]||"",         // Columna I - MOSTRAR
+                datosScoreSeg.push({
+                    udn: r[0]||"",              // Columna A - UDN
+                    gerente: r[1]||"",          // Columna B - Gerente (solo filtro)
+                    jefe: r[2]||"",             // Columna C - Jefe (solo filtro)
+                    anio: r[3]||"",             // Columna D - Año (solo filtro)
+                    mes: r[4]||"",              // Columna E - Mes (solo filtro)
+                    sem: r[5]||"",              // Columna F - Sem (solo filtro)
+                    dia: r[6]||"",              // Columna G - Día (solo filtro)
+                    operador: r[7]||"",         // Columna H - NOMBRE (mostrar)
+                    cliente: r[8]||"",          // Columna I - CLIENTE (solo filtro)
                     // Eventos Críticos (J-N, índices 9-13)
-                    critAcel: num(r[9]),       // Columna J
-                    critFreno: num(r[10]),     // Columna K
-                    critGiroD: num(r[11]),     // Columna L
-                    critGiroI: num(r[12]),     // Columna M
-                    critVeloc: num(r[13]),     // Columna N
+                    critAcel: num(r[9]),        // Columna J - ACELERACION
+                    critFreno: num(r[10]),      // Columna K - FRENO
+                    critGiroD: num(r[11]),      // Columna L - GIRO DER
+                    critGiroI: num(r[12]),      // Columna M - GIRO IZQ
+                    critVeloc: num(r[13]),      // Columna N - VELOCIDAD
                     // Eventos Moderados (O-S, índices 14-18)
-                    modAcel: num(r[14]),       // Columna O
-                    modFreno: num(r[15]),      // Columna P
-                    modGiroD: num(r[16]),      // Columna Q
-                    modGiroI: num(r[17]),      // Columna R
-                    modVeloc: num(r[18]),      // Columna S
+                    modAcel: num(r[14]),        // Columna O - ACELERACION
+                    modFreno: num(r[15]),       // Columna P - FRENO
+                    modGiroD: num(r[16]),       // Columna Q - GIRO DER
+                    modGiroI: num(r[17]),       // Columna R - GIRO IZQ
+                    modVeloc: num(r[18]),       // Columna S - VELOCIDAD
                     // Eventos Leves (T-W, índices 19-22)
-                    levFreno: num(r[19]),      // Columna T
-                    levGiroD: num(r[20]),      // Columna U
-                    levGiroI: num(r[21]),      // Columna V
-                    levVeloc: num(r[22]),      // Columna W
+                    levFreno: num(r[19]),       // Columna T - FRENO
+                    levGiroD: num(r[20]),       // Columna U - GIRO DER
+                    levGiroI: num(r[21]),       // Columna V - GIRO IZQ
+                    levVeloc: num(r[22]),       // Columna W - VELOCIDAD
                     // Score (X, índice 23)
-                    score: num(r[23])          // Columna X
+                    score: num(r[23])           // Columna X - SCORE DE SEG
                 });
             }
             
             console.log(`✓ Score Seg cargado: ${datosScoreSeg.length} registros`);
+            console.log('Primer registro completo:', datosScoreSeg[0]);
             poblarFiltrosScore();
             datosScoreFiltrados = [...datosScoreSeg];
             renderizarTablaScore();
@@ -1206,27 +1210,26 @@ function renderizarTablaScore(){
         else if(d.score >= 80) scoreColor = '#eab308'; // Amarillo
         else if(d.score >= 70) scoreColor = '#f59e0b'; // Naranja
         
-        html += `
-        <tr>
-            <td>${d.udn}</td>
-            <td style="font-weight:600;">${d.operador}</td>
-            <td>${d.cliente}</td>
-            <td style="${colorEvento(d.critAcel)}">${d.critAcel}</td>
-            <td style="${colorEvento(d.critFreno)}">${d.critFreno}</td>
-            <td style="${colorEvento(d.critGiroD)}">${d.critGiroD}</td>
-            <td style="${colorEvento(d.critGiroI)}">${d.critGiroI}</td>
-            <td style="${colorEvento(d.critVeloc)}">${d.critVeloc}</td>
-            <td style="${colorEvento(d.modAcel)}">${d.modAcel}</td>
-            <td style="${colorEvento(d.modFreno)}">${d.modFreno}</td>
-            <td style="${colorEvento(d.modGiroD)}">${d.modGiroD}</td>
-            <td style="${colorEvento(d.modGiroI)}">${d.modGiroI}</td>
-            <td style="${colorEvento(d.modVeloc)}">${d.modVeloc}</td>
-            <td style="${colorEvento(d.levFreno)}">${d.levFreno}</td>
-            <td style="${colorEvento(d.levGiroD)}">${d.levGiroD}</td>
-            <td style="${colorEvento(d.levGiroI)}">${d.levGiroI}</td>
-            <td style="${colorEvento(d.levVeloc)}">${d.levVeloc}</td>
-            <td style="background:${scoreColor};color:white;font-weight:800;font-size:14px;">${d.score.toFixed(1)}</td>
-        </tr>`;
+      html += `
+            <tr>
+                <td>${d.udn}</td>
+                <td style="font-weight:600;">${d.operador}</td>
+                <td style="${colorEvento(d.critAcel)}">${d.critAcel}</td>
+                <td style="${colorEvento(d.critFreno)}">${d.critFreno}</td>
+                <td style="${colorEvento(d.critGiroD)}">${d.critGiroD}</td>
+                <td style="${colorEvento(d.critGiroI)}">${d.critGiroI}</td>
+                <td style="${colorEvento(d.critVeloc)}">${d.critVeloc}</td>
+                <td style="${colorEvento(d.modAcel)}">${d.modAcel}</td>
+                <td style="${colorEvento(d.modFreno)}">${d.modFreno}</td>
+                <td style="${colorEvento(d.modGiroD)}">${d.modGiroD}</td>
+                <td style="${colorEvento(d.modGiroI)}">${d.modGiroI}</td>
+                <td style="${colorEvento(d.modVeloc)}">${d.modVeloc}</td>
+                <td style="${colorEvento(d.levFreno)}">${d.levFreno}</td>
+                <td style="${colorEvento(d.levGiroD)}">${d.levGiroD}</td>
+                <td style="${colorEvento(d.levGiroI)}">${d.levGiroI}</td>
+                <td style="${colorEvento(d.levVeloc)}">${d.levVeloc}</td>
+                <td style="background:${scoreColor};color:white;font-weight:800;font-size:14px;">${d.score.toFixed(1)}</td>
+            </tr>`;
     });
     
     tbody.innerHTML = html;
