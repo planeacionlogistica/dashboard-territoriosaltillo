@@ -61,25 +61,6 @@ body{
     background:#84cc16;
     color:#1f2937;
 }
-.menu-item.available{
-    position:relative;
-}
-.menu-item.available::after{
-    content:'✓';
-    position:absolute;
-    right:15px;
-    color:#84cc16;
-    font-weight:800;
-}
-.menu-item.construccion{
-    opacity:0.6;
-}
-.menu-item.construccion::after{
-    content:'🚧';
-    position:absolute;
-    right:15px;
-    font-size:12px;
-}
 
 /* ===== Main ===== */
 .main{
@@ -138,49 +119,6 @@ body{
     letter-spacing:2px;
 }
 
-.stats-grid{
-    display:grid;
-    grid-template-columns:repeat(3, 1fr);
-    gap:30px;
-    margin-top:60px;
-    max-width:900px;
-}
-
-.stat-card{
-    background:rgba(255,255,255,0.9);
-    backdrop-filter:blur(10px);
-    border:2px solid #e5e7eb;
-    border-radius:12px;
-    padding:25px;
-    text-align:center;
-    transition:all 0.3s;
-}
-.stat-card:hover{
-    transform:translateY(-5px);
-    box-shadow:0 8px 20px rgba(0,0,0,0.1);
-    border-color:#84cc16;
-}
-.stat-card .icon{
-    font-size:40px;
-    margin-bottom:15px;
-}
-.stat-card h3{
-    font-size:14px;
-    color:#6b7280;
-    margin-bottom:10px;
-    text-transform:uppercase;
-    letter-spacing:1px;
-    font-weight:700;
-}
-.stat-card .value{
-    font-size:32px;
-    font-weight:800;
-    color:#1f2937;
-}
-.stat-card.available .value{
-    color:#84cc16;
-}
-
 @media (max-width: 1024px){
     .layout{
         flex-direction:column;
@@ -188,10 +126,6 @@ body{
     .sidebar{
         width:100%;
         max-height:300px;
-    }
-    .stats-grid{
-        grid-template-columns:1fr;
-        gap:20px;
     }
 }
 
@@ -206,9 +140,6 @@ body{
     .hero img{
         width:140px;
     }
-    .stats-grid{
-        margin-top:40px;
-    }
 }
 </style>
 </head>
@@ -220,26 +151,13 @@ body{
         
         <div class="menu-group">
             <div class="menu-group-title">📊 Logística</div>
-            <a href="dashboard_kilometros.html" class="menu-item available">📍 Kilómetros Recorridos</a>
-            <a href="dashboard_flota.html" class="menu-item construccion">🚗 Flota Vehicular</a>
+            <a href="dashboard_kilometros.html" class="menu-item">📍 Kilómetros Recorridos</a>
+            <a href="dashboard_flota.html" class="menu-item">🚗 Flota Vehicular</a>
         </div>
         
         <div class="menu-group">
             <div class="menu-group-title">🛡️ Seguridad Vial</div>
-            <a href="dashboard_scoreseg.html" class="menu-item available">⚠️ Score de Seguridad</a>
-            <span class="menu-item construccion" style="cursor:not-allowed;">🚨 Alertas y Eventos</span>
-        </div>
-        
-        <div class="menu-group">
-            <div class="menu-group-title">📈 Reportes</div>
-            <span class="menu-item construccion" style="cursor:not-allowed;">📋 Reportes Ejecutivos</span>
-            <span class="menu-item construccion" style="cursor:not-allowed;">📊 Análisis Comparativo</span>
-        </div>
-        
-        <div class="menu-group">
-            <div class="menu-group-title">⚙️ Configuración</div>
-            <span class="menu-item construccion" style="cursor:not-allowed;">👤 Usuarios</span>
-            <span class="menu-item construccion" style="cursor:not-allowed;">🔧 Ajustes</span>
+            <a href="dashboard_scoreseg.html" class="menu-item">⚠️ Score de Seguridad</a>
         </div>
     </aside>
     
@@ -250,26 +168,6 @@ body{
             <h2>TRAXIÓN</h2>
             <p>Business Intelligence · Operaciones · Seguridad</p>
             <p class="tagline">DASHBOARD EJECUTIVO</p>
-            
-            <div class="stats-grid">
-                <div class="stat-card available">
-                    <div class="icon">📊</div>
-                    <h3>Kilómetros</h3>
-                    <div class="value">✓</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="icon">🚗</div>
-                    <h3>Flota</h3>
-                    <div class="value">35%</div>
-                </div>
-                
-                <div class="stat-card available">
-                    <div class="icon">🛡️</div>
-                    <h3>ScoreSeg</h3>
-                    <div class="value">✓</div>
-                </div>
-            </div>
         </div>
     </main>
 </div>
