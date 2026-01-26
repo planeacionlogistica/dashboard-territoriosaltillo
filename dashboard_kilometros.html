@@ -612,48 +612,46 @@ async function actualizar(){
     }
 
     // Construir tabla por CARRO (económico)
-    // Necesito saber en qué columnas están los datos de carros en tu Excel
-    // Asumiendo que están después de la columna 29, ajusta según tu estructura
     const tablaBodyCarro = document.getElementById('tablaCarro');
     tablaBodyCarro.innerHTML = '';
     
     let filasCarros = [];
     
     // Datos por CARRO desde el Excel
-    // AG=32, AH=33, AI=34, AJ=35, AK=36, AL=37, AM=38, AN=39, AO=40, AP=41
+    // AF=31, AG=32, AH=33, AI=34, AJ=35, AK=36, AL=37, AM=38, AN=39
     for(let i = 1; i < rows.length; i++){
         const r = rows[i];
-        if(!r || r.length < 42) continue;
+        if(!r || r.length < 40) continue;
         
-        const udnCarro = (r[32]||"").toString().trim().toUpperCase();
-        const gerenteCarro = (r[33]||"").toString().trim();
-        const jefeCarro = (r[34]||"").toString().trim();
-        const economico = (r[35]||"").toString().trim();
-        const kmRecorridosCarro = num(r[36]);
-        const kmServiciosCarro = num(r[37]);
-        const kmMttoCarro = num(r[38]);
-        const kmIneficienteCarro = num(r[39]);
-        const pctVacioCarro = (r[40]||"0%").toString();
+        const udnCarro = (r[31]||"").toString().trim();
+        const udnCarroUpper = udnCarro.toUpperCase();
         
-        // Filtrar por unidad de negocio
+        // Filtrar por unidad de negocio (igual que tabla de clientes)
         let coincide = false;
         if(unidad === "SETTEPI SALTILLO"){
-            coincide = udnCarro.includes("SETTEPI");
+            coincide = udnCarroUpper.includes("SETTEPI");
         } else if(unidad === "LIPU SALTILLO"){
-            coincide = udnCarro.includes("LIPU");
+            coincide = udnCarroUpper.includes("LIPU");
         }
         
-        if(coincide && economico){
-            filasCarros.push({
-                economico,
-                gerente: gerenteCarro,
-                jefe: jefeCarro,
-                kmRecorridos: kmRecorridosCarro,
-                kmServicios: kmServiciosCarro,
-                kmMtto: kmMttoCarro,
-                kmIneficiente: kmIneficienteCarro,
-                pctVacio: pctVacioCarro
-            });
+        if(coincide){
+            const gerenteCarro = r[32]||"-";
+            const jefeCarro = r[33]||"-";
+            const economico = (r[34]||"").toString().trim();
+            
+            // Solo agregar si tiene un económico válido
+            if(economico && economico !== "" && economico !== "-"){
+                filasCarros.push({
+                    economico: economico,
+                    gerente: gerenteCarro,
+                    jefe: jefeCarro,
+                    kmRecorridos: num(r[35]),
+                    kmServicios: num(r[36]),
+                    kmMtto: num(r[37]),
+                    kmIneficiente: num(r[38]),
+                    pctVacio: (r[39]||"0%").toString()
+                });
+            }
         }
     }
     
