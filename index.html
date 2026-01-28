@@ -10,13 +10,11 @@ body{
     font-family:'Segoe UI',Tahoma,Verdana,sans-serif;
     background:#f3f4f6;
 }
-
 /* ===== Layout ===== */
 .layout{
     display:flex;
     height:100vh;
 }
-
 /* ===== Sidebar ===== */
 .sidebar{
     width:260px;
@@ -61,7 +59,6 @@ body{
     background:#84cc16;
     color:#1f2937;
 }
-
 /* ===== Main ===== */
 .main{
     flex:1;
@@ -69,7 +66,6 @@ body{
     position:relative;
     overflow:hidden;
 }
-
 /* Fondo imagen */
 .main::before{
     content:'';
@@ -81,7 +77,6 @@ body{
     background-size:cover;
     background-position:center;
 }
-
 /* Centro */
 .hero{
     position:relative;
@@ -118,7 +113,6 @@ body{
     margin-top:20px;
     letter-spacing:2px;
 }
-
 @media (max-width: 1024px){
     .layout{
         flex-direction:column;
@@ -128,7 +122,6 @@ body{
         max-height:300px;
     }
 }
-
 @media (max-width: 640px){
     .hero h2{
         font-size:36px;
@@ -153,6 +146,7 @@ body{
             <div class="menu-group-title">📊 Logística</div>
             <a href="dashboard_kilometros.html" class="menu-item">📍 Kilómetros Recorridos</a>
             <a href="dashboard_flota.html" class="menu-item">🚗 Flota Vehicular</a>
+            <a href="dashboard_difkm.html" class="menu-item">📏 Dif Km cargas vs gps</a>
         </div>
         
         <div class="menu-group">
@@ -172,4 +166,3 @@ body{
 </div>
 </body>
 </html>
-
