@@ -27,24 +27,97 @@ nav{
     gap:25px;
     align-items:center;
     box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    position:relative;
+    flex-wrap:wrap;
 }
-nav a{
+nav > a{
     color:#e5e7eb;
     text-decoration:none;
     font-weight:600;
     padding:8px 16px;
     border-radius:8px;
     transition:all 0.3s;
+    white-space:nowrap;
 }
-nav a:first-child{
+nav > a:first-child{
     color:#84cc16;
     font-weight:800;
     font-size:18px;
 }
-nav a:hover{
+nav > a:hover{
     background:#374151;
 }
-nav a.active{
+
+/* ===== MENÚ DROPDOWN ===== */
+.dropdown{
+    position:relative;
+    display:inline-block;
+}
+
+.dropdown-toggle{
+    color:#e5e7eb;
+    text-decoration:none;
+    font-weight:600;
+    padding:8px 16px;
+    border-radius:8px;
+    transition:all 0.3s;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:transparent;
+    border:none;
+    font-size:14px;
+    font-family:inherit;
+}
+
+.dropdown-toggle:hover{
+    background:#374151;
+}
+
+.dropdown-arrow{
+    font-size:12px;
+    transition:transform 0.3s;
+}
+
+.dropdown.open .dropdown-arrow{
+    transform:rotate(180deg);
+}
+
+.dropdown-menu{
+    display:none;
+    position:absolute;
+    top:100%;
+    left:0;
+    background:#374151;
+    min-width:220px;
+    border-radius:8px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.3);
+    margin-top:8px;
+    z-index:1000;
+    overflow:hidden;
+}
+
+.dropdown.open .dropdown-menu{
+    display:block;
+}
+
+.dropdown-menu a{
+    display:block;
+    padding:12px 20px;
+    color:#e5e7eb;
+    text-decoration:none;
+    font-weight:600;
+    transition:all 0.3s;
+    border-radius:0;
+}
+
+.dropdown-menu a:hover{
+    background:#4b5563;
+    padding-left:25px;
+}
+
+.dropdown-menu a.active{
     background:#84cc16;
     color:#1f2937;
 }
@@ -266,9 +339,29 @@ input[type="text"]:focus{
 <!-- ================== NAVEGACIÓN ================== -->
 <nav>
     <a href="index.html">🚛 TRAXIÓN</a>
-    <a href="dashboard_kilometros.html" class="active">📊 Kilómetros</a>
-    <a href="dashboard_flota.html">🚗 Flota</a>
-    <a href="dashboard_scoreseg.html">🛡️ ScoreSeg</a>
+    
+    <!-- DROPDOWN LOGÍSTICA -->
+    <div class="dropdown" id="dropdownLogistica">
+        <button class="dropdown-toggle" onclick="toggleDropdown('dropdownLogistica')">
+            📦 Logística <span class="dropdown-arrow">▼</span>
+        </button>
+        <div class="dropdown-menu">
+            <a href="dashboard_kilometros.html" class="active">📊 Kilómetros</a>
+            <a href="dashboard_flota.html">🚗 Flota</a>
+            <a href="dashboard_difkm.html">📏 Dif Km cargas vs GPS</a>
+            <a href="dashboard_NS.html">📈 Nivel de Servicio</a>
+        </div>
+    </div>
+    
+    <!-- DROPDOWN SEGURIDAD VIAL -->
+    <div class="dropdown" id="dropdownSeguridad">
+        <button class="dropdown-toggle" onclick="toggleDropdown('dropdownSeguridad')">
+            🛡️ Seguridad Vial <span class="dropdown-arrow">▼</span>
+        </button>
+        <div class="dropdown-menu">
+            <a href="dashboard_scoreseg.html">⚠️ Score de Seguridad</a>
+        </div>
+    </div>
 </nav>
 
 <!-- ================== CONTENIDO ================== -->
@@ -998,6 +1091,31 @@ function exportarExcelCarro(){
     link.download = `Detalle_Kilometros_Carro_${unidad.replace(' ','_')}_${fecha}.csv`;
     link.click();
 }
+
+// ===== MENÚ DROPDOWN =====
+function toggleDropdown(dropdownId) {
+    const dropdown = document.getElementById(dropdownId);
+    const allDropdowns = document.querySelectorAll('.dropdown');
+    
+    // Cerrar todos los demás dropdowns
+    allDropdowns.forEach(d => {
+        if (d.id !== dropdownId) {
+            d.classList.remove('open');
+        }
+    });
+    
+    // Toggle el dropdown actual
+    dropdown.classList.toggle('open');
+}
+
+// Cerrar dropdowns al hacer click fuera
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdown').forEach(d => {
+            d.classList.remove('open');
+        });
+    }
+});
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
