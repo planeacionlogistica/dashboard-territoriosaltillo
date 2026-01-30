@@ -3,10 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Score de Seguridad | Traxión</title>
-
-<!-- ================== CDN ================== -->
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<title>Dashboard Dif Km Cargas vs GPS | Traxión</title>
 
 <!-- ================== ESTILOS ================== -->
 <style>
@@ -26,24 +23,97 @@ nav{
     gap:25px;
     align-items:center;
     box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    position:relative;
+    flex-wrap:wrap;
 }
-nav a{
+nav > a{
     color:#e5e7eb;
     text-decoration:none;
     font-weight:600;
     padding:8px 16px;
     border-radius:8px;
     transition:all 0.3s;
+    white-space:nowrap;
 }
-nav a:first-child{
+nav > a:first-child{
     color:#84cc16;
     font-weight:800;
     font-size:18px;
 }
-nav a:hover{
+nav > a:hover{
     background:#374151;
 }
-nav a.active{
+
+/* ===== MENÚ DROPDOWN ===== */
+.dropdown{
+    position:relative;
+    display:inline-block;
+}
+
+.dropdown-toggle{
+    color:#e5e7eb;
+    text-decoration:none;
+    font-weight:600;
+    padding:8px 16px;
+    border-radius:8px;
+    transition:all 0.3s;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:transparent;
+    border:none;
+    font-size:14px;
+    font-family:inherit;
+}
+
+.dropdown-toggle:hover{
+    background:#374151;
+}
+
+.dropdown-arrow{
+    font-size:12px;
+    transition:transform 0.3s;
+}
+
+.dropdown.open .dropdown-arrow{
+    transform:rotate(180deg);
+}
+
+.dropdown-menu{
+    display:none;
+    position:absolute;
+    top:100%;
+    left:0;
+    background:#374151;
+    min-width:220px;
+    border-radius:8px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.3);
+    margin-top:8px;
+    z-index:1000;
+    overflow:hidden;
+}
+
+.dropdown.open .dropdown-menu{
+    display:block;
+}
+
+.dropdown-menu a{
+    display:block;
+    padding:12px 20px;
+    color:#e5e7eb;
+    text-decoration:none;
+    font-weight:600;
+    transition:all 0.3s;
+    border-radius:0;
+}
+
+.dropdown-menu a:hover{
+    background:#4b5563;
+    padding-left:25px;
+}
+
+.dropdown-menu a.active{
     background:#84cc16;
     color:#1f2937;
 }
@@ -51,7 +121,7 @@ nav a.active{
 /* ===== CONTENIDO ===== */
 .content{
     padding:30px;
-    max-width:1800px;
+    max-width:1600px;
     margin:0 auto;
 }
 
@@ -71,149 +141,79 @@ header h1{
     font-size:16px;
 }
 
-.chart-container{
+/* ===== EN CONSTRUCCIÓN ===== */
+.construccion-container{
     background:#ffffff;
     border:2px solid #e5e7eb;
-    border-radius:12px;
-    padding:20px;
-    margin-bottom:25px;
-    transition:transform 0.2s, box-shadow 0.2s;
-}
-.chart-container:hover{
-    transform:translateY(-2px);
-    box-shadow:0 4px 12px rgba(0,0,0,0.1);
-}
-.chart-container h3{
-    font-size:16px;
-    font-weight:700;
-    margin-bottom:15px;
-    color:#1f2937;
-    padding-bottom:10px;
-    border-bottom:2px solid #84cc16;
-}
-
-.filter-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-    gap:12px;
-    margin-top:15px;
-}
-
-select, input[type="text"]{
-    padding:10px;
-    border:2px solid #e5e7eb;
-    border-radius:8px;
-    font-size:13px;
-    background:#fff;
-    transition:border 0.3s;
-}
-select:focus, input[type="text"]:focus{
-    outline:none;
-    border-color:#84cc16;
-}
-
-button{
-    background:#84cc16;
-    color:#1f2937;
-    border:none;
-    padding:10px 20px;
-    border-radius:8px;
-    font-weight:700;
-    font-size:14px;
-    cursor:pointer;
-    transition:all 0.3s;
-    box-shadow:0 2px 4px rgba(0,0,0,0.1);
-}
-button:hover{
-    background:#65a30d;
-}
-
-.btn-limpiar{
-    background:#fff;
-    color:#1f2937;
-    border:2px solid #e5e7eb;
-}
-.btn-limpiar:hover{
-    background:#f3f4f6;
-}
-
-.stats-box{
-    background:#f3f4f6;
-    padding:10px;
-    border-radius:8px;
-    margin-top:15px;
-}
-.stats-box span{
-    font-size:14px;
-    color:#6b7280;
-}
-.stats-box strong{
-    color:#1f2937;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    font-size:12px;
-}
-th,td{
-    padding:10px 8px;
+    border-radius:14px;
+    padding:80px 40px;
     text-align:center;
-    border-bottom:1px solid #e5e7eb;
+    margin-top:60px;
 }
-th{
-    background:#f9fafb;
+
+.construccion-icon{
+    font-size:120px;
+    margin-bottom:30px;
+    animation:float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+.construccion-container h2{
+    color:#1f2937;
+    font-size:36px;
+    margin-bottom:15px;
+}
+
+.construccion-container p{
+    color:#6b7280;
+    font-size:18px;
+    margin-bottom:10px;
+    line-height:1.6;
+}
+
+.construccion-container .highlight{
+    color:#84cc16;
     font-weight:700;
-    color:#374151;
-    position:sticky;
-    top:0;
-    z-index:10;
-}
-tr:hover{
-    background:#f9fafb;
 }
 
-.table-wrapper{
-    overflow-x:auto;
-    max-height:600px;
-    overflow-y:auto;
-}
-
-/* Colores de eventos */
-.evento-critico{
-    background:#fee2e2;
-    font-weight:600;
-}
-.evento-moderado{
+.status-badge{
+    display:inline-block;
     background:#fef3c7;
-    font-weight:600;
-}
-.evento-leve{
-    background:#fef9c3;
-    font-weight:600;
+    color:#92400e;
+    padding:8px 20px;
+    border-radius:20px;
+    font-weight:700;
+    font-size:14px;
+    margin-top:20px;
 }
 
-/* Colores de score */
-.score-excelente{
-    background:#22c55e;
-    color:#fff;
+.progress-bar{
+    background:#e5e7eb;
+    height:8px;
+    border-radius:10px;
+    margin-top:40px;
+    overflow:hidden;
 }
-.score-bueno{
-    background:#eab308;
-    color:#fff;
+
+.progress-fill{
+    background:linear-gradient(90deg, #84cc16, #65a30d);
+    height:100%;
+    width:15%;
+    border-radius:10px;
+    animation:progress 2s ease-in-out;
 }
-.score-regular{
-    background:#f59e0b;
-    color:#fff;
-}
-.score-malo{
-    background:#dc2626;
-    color:#fff;
+
+@keyframes progress {
+    from { width: 0%; }
+    to { width: 15%; }
 }
 
 @media (max-width: 640px){
     nav{
-        flex-wrap:wrap;
         gap:10px;
     }
     .content{
@@ -225,11 +225,17 @@ tr:hover{
     header h1{
         font-size:24px;
     }
-    table{
-        font-size:10px;
+    .construccion-container{
+        padding:40px 20px;
     }
-    th,td{
-        padding:6px 4px;
+    .construccion-icon{
+        font-size:80px;
+    }
+    .construccion-container h2{
+        font-size:28px;
+    }
+    .construccion-container p{
+        font-size:16px;
     }
 }
 </style>
@@ -240,99 +246,50 @@ tr:hover{
 <!-- ================== NAVEGACIÓN ================== -->
 <nav>
     <a href="index.html">🚛 TRAXIÓN</a>
-    <a href="dashboard_kilometros.html">📊 Kilómetros</a>
-    <a href="dashboard_flota.html">🚗 Flota</a>
-    <a href="dashboard_scoreseg.html" class="active">🛡️ ScoreSeg</a>
+    
+    <!-- DROPDOWN LOGÍSTICA -->
+    <div class="dropdown" id="dropdownLogistica">
+        <button class="dropdown-toggle" onclick="toggleDropdown('dropdownLogistica')">
+            📦 Logística <span class="dropdown-arrow">▼</span>
+        </button>
+        <div class="dropdown-menu">
+            <a href="dashboard_kilometros.html">📊 Kilómetros</a>
+            <a href="dashboard_difkm.html" class="active">📏 Dif Km cargas vs GPS</a>
+            <a href="dashboard_NS.html">📈 Nivel de Servicio</a>
+        </div>
+    </div>
+    
+    <!-- DROPDOWN SEGURIDAD VIAL -->
+    <div class="dropdown" id="dropdownSeguridad">
+        <button class="dropdown-toggle" onclick="toggleDropdown('dropdownSeguridad')">
+            🛡️ Seguridad Vial <span class="dropdown-arrow">▼</span>
+        </button>
+        <div class="dropdown-menu">
+            <a href="dashboard_scoreseg.html">⚠️ Score de Seguridad</a>
+        </div>
+    </div>
 </nav>
 
 <!-- ================== CONTENIDO ================== -->
 <main class="content">
 
     <header>
-        <h1>Dashboard de Eventos Score Seg</h1>
-        <p class="subtitle">Monitoreo de seguridad y comportamiento</p>
+        <h1>Dashboard Diferencia Km Cargas vs GPS</h1>
+        <p class="subtitle">Análisis y comparativa de kilometrajes</p>
     </header>
 
-    <!-- Filtros Múltiples -->
-    <div class="chart-container">
-        <h3>Filtros de Búsqueda</h3>
-        <div class="filter-grid">
-            <select id="filtroScoreUDN">
-                <option value="">Todas las UDN</option>
-            </select>
-            <select id="filtroScoreGerente">
-                <option value="">Todos los Gerentes</option>
-            </select>
-            <select id="filtroScoreJefe">
-                <option value="">Todos los Jefes</option>
-            </select>
-            <select id="filtroScoreAnio">
-                <option value="">Todos los Años</option>
-            </select>
-            <select id="filtroScoreMes">
-                <option value="">Todos los Meses</option>
-            </select>
-            <select id="filtroScoreSem">
-                <option value="">Todas las Semanas</option>
-            </select>
-            <select id="filtroScoreDia">
-                <option value="">Todos los Días</option>
-            </select>
-            <select id="filtroScoreCliente">
-                <option value="">Todos los Clientes</option>
-            </select>
-            <input type="text" id="filtroScoreOperador" placeholder="🔍 Buscar Operador">
-            <button class="btn-limpiar" onclick="limpiarFiltrosScore()">🗑️ Limpiar Filtros</button>
-        </div>
-        <div class="stats-box">
-            <span>Registros mostrados: <strong id="contadorRegistros">0</strong></span>
-        </div>
-    </div>
-
-    <!-- Tabla de Score Seg -->
-    <div class="chart-container">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:10px;">
-            <h3 style="margin:0;">Detalle de Eventos por Operador</h3>
-            <button onclick="exportarScoreExcel()">📥 Exportar a Excel</button>
-        </div>
+    <div class="construccion-container">
+        <div class="construccion-icon">📏</div>
         
-        <div class="table-wrapper">
-            <table id="tablaScoreSeg">
-                <thead>
-                    <tr>
-                        <th rowspan="2">UDN</th>
-                        <th rowspan="2">Operador</th>
-                        <th rowspan="2">Cliente</th>
-                        <th colspan="5" style="background:#fee2e2;color:#991b1b;">EVENTOS CRÍTICOS</th>
-                        <th colspan="5" style="background:#fef3c7;color:#92400e;">EVENTOS MODERADOS</th>
-                        <th colspan="4" style="background:#fef9c3;color:#713f12;">EVENTOS LEVES</th>
-                        <th rowspan="2" style="background:#1f2937;color:#84cc16;">SCORE</th>
-                    </tr>
-                    <tr style="background:#f9fafb;">
-                        <th style="font-size:10px;">Acel</th>
-                        <th style="font-size:10px;">Freno</th>
-                        <th style="font-size:10px;">Giro D</th>
-                        <th style="font-size:10px;">Giro I</th>
-                        <th style="font-size:10px;">Veloc</th>
-                        <th style="font-size:10px;">Acel</th>
-                        <th style="font-size:10px;">Freno</th>
-                        <th style="font-size:10px;">Giro D</th>
-                        <th style="font-size:10px;">Giro I</th>
-                        <th style="font-size:10px;">Veloc</th>
-                        <th style="font-size:10px;">Freno</th>
-                        <th style="font-size:10px;">Giro D</th>
-                        <th style="font-size:10px;">Giro I</th>
-                        <th style="font-size:10px;">Veloc</th>
-                    </tr>
-                </thead>
-                <tbody id="tablaScoreBody">
-                    <tr>
-                        <td colspan="17" style="text-align:center;padding:30px;color:#6b7280;">
-                            Cargando datos...
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <h2>Sección en Construcción</h2>
+        
+        <p>Estamos trabajando en traerte el mejor dashboard de <span class="highlight">Diferencia de Kilómetros</span></p>
+        <p>Pronto podrás comparar y analizar las diferencias entre cargas y GPS</p>
+        
+        <div class="status-badge">⚙️ En Desarrollo - 15% Completado</div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
         </div>
     </div>
 
@@ -340,262 +297,28 @@ tr:hover{
 
 <!-- ================== JAVASCRIPT ================== -->
 <script>
-const SHEET_ID = "1l3QYg7N050BScrtNhKkHQ-hHNDgaK9Prw95Dzb2-DRE";
-const SHEET_SCORESEG = "Detalle ScoreSeg";
-
-let datosScoreSeg = [];
-let datosScoreFiltrados = [];
-
-function num(v){
-    if(!v) return 0;
-    let str = v.toString().replace(/[$,\s]/g,"").trim();
-    return Number(str) || 0;
+function toggleDropdown(dropdownId) {
+    const dropdown = document.getElementById(dropdownId);
+    const allDropdowns = document.querySelectorAll('.dropdown');
+    
+    // Cerrar todos los demás dropdowns
+    allDropdowns.forEach(d => {
+        if (d.id !== dropdownId) {
+            d.classList.remove('open');
+        }
+    });
+    
+    // Toggle el dropdown actual
+    dropdown.classList.toggle('open');
 }
 
-async function cargarScoreSeg(){
-    console.log('📄 Cargando Score Seg...');
-    
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(SHEET_SCORESEG)}`;
-    
-    try {
-        const res = await fetch(url);
-        const csv = await res.text();
-        
-        Papa.parse(csv, {
-            header: false,
-            skipEmptyLines: true,
-            complete: function(results){
-                const rows = results.data;
-                datosScoreSeg = [];
-                
-                console.log('Primera fila (encabezados):', rows[0]);
-                console.log('Segunda fila (primer dato):', rows[1]);
-                console.log('Total filas:', rows.length);
-                
-                // Leer desde fila 2 (índice 1) para saltar encabezados
-                for(let i = 1; i < rows.length; i++){
-                    const r = rows[i];
-                    if(!r || r.length < 24) continue;
-                    
-                    datosScoreSeg.push({
-                        udn: r[0]||"",
-                        gerente: r[1]||"",
-                        jefe: r[2]||"",
-                        anio: r[3]||"",
-                        mes: r[4]||"",
-                        sem: r[5]||"",
-                        dia: r[6]||"",
-                        operador: r[7]||"",
-                        cliente: r[8]||"",
-                        // Eventos Críticos (J-N, índices 9-13)
-                        critAcel: num(r[9]),
-                        critFreno: num(r[10]),
-                        critGiroD: num(r[11]),
-                        critGiroI: num(r[12]),
-                        critVeloc: num(r[13]),
-                        // Eventos Moderados (O-S, índices 14-18)
-                        modAcel: num(r[14]),
-                        modFreno: num(r[15]),
-                        modGiroD: num(r[16]),
-                        modGiroI: num(r[17]),
-                        modVeloc: num(r[18]),
-                        // Eventos Leves (T-W, índices 19-22)
-                        levFreno: num(r[19]),
-                        levGiroD: num(r[20]),
-                        levGiroI: num(r[21]),
-                        levVeloc: num(r[22]),
-                        // Score (X, índice 23)
-                        score: num(r[23])
-                    });
-                }
-                
-                console.log(`✅ Score Seg cargado: ${datosScoreSeg.length} registros`);
-                console.log('Primer registro completo:', datosScoreSeg[0]);
-                
-                poblarFiltrosScore();
-                datosScoreFiltrados = [...datosScoreSeg];
-                renderizarTablaScore();
-            }
+// Cerrar dropdowns al hacer click fuera
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdown').forEach(d => {
+            d.classList.remove('open');
         });
-    } catch(error) {
-        console.error('Error cargando datos:', error);
-        document.getElementById('tablaScoreBody').innerHTML = 
-            '<tr><td colspan="17" style="text-align:center;padding:30px;color:#dc2626;">Error al cargar los datos. Por favor, verifica la conexión.</td></tr>';
     }
-}
-
-function poblarFiltrosScore(){
-    // Extraer valores únicos para cada filtro
-    const udns = [...new Set(datosScoreSeg.map(d => d.udn).filter(v => v))].sort();
-    const gerentes = [...new Set(datosScoreSeg.map(d => d.gerente).filter(v => v))].sort();
-    const jefes = [...new Set(datosScoreSeg.map(d => d.jefe).filter(v => v))].sort();
-    const anios = [...new Set(datosScoreSeg.map(d => d.anio).filter(v => v))].sort();
-    const meses = [...new Set(datosScoreSeg.map(d => d.mes).filter(v => v))].sort();
-    const sems = [...new Set(datosScoreSeg.map(d => d.sem).filter(v => v))].sort();
-    const dias = [...new Set(datosScoreSeg.map(d => d.dia).filter(v => v))].sort();
-    const clientes = [...new Set(datosScoreSeg.map(d => d.cliente).filter(v => v))].sort();
-    
-    // Poblar selectores
-    document.getElementById('filtroScoreUDN').innerHTML = '<option value="">Todas las UDN</option>' + 
-        udns.map(u => `<option value="${u}">${u}</option>`).join('');
-    
-    document.getElementById('filtroScoreGerente').innerHTML = '<option value="">Todos los Gerentes</option>' + 
-        gerentes.map(g => `<option value="${g}">${g}</option>`).join('');
-    
-    document.getElementById('filtroScoreJefe').innerHTML = '<option value="">Todos los Jefes</option>' + 
-        jefes.map(j => `<option value="${j}">${j}</option>`).join('');
-    
-    document.getElementById('filtroScoreAnio').innerHTML = '<option value="">Todos los Años</option>' + 
-        anios.map(a => `<option value="${a}">${a}</option>`).join('');
-    
-    document.getElementById('filtroScoreMes').innerHTML = '<option value="">Todos los Meses</option>' + 
-        meses.map(m => `<option value="${m}">${m}</option>`).join('');
-    
-    document.getElementById('filtroScoreSem').innerHTML = '<option value="">Todas las Semanas</option>' + 
-        sems.map(s => `<option value="${s}">${s}</option>`).join('');
-    
-    document.getElementById('filtroScoreDia').innerHTML = '<option value="">Todos los Días</option>' + 
-        dias.map(d => `<option value="${d}">${d}</option>`).join('');
-    
-    document.getElementById('filtroScoreCliente').innerHTML = '<option value="">Todos los Clientes</option>' + 
-        clientes.map(c => `<option value="${c}">${c}</option>`).join('');
-}
-
-function filtrarScoreSeg(){
-    const fUdn = document.getElementById('filtroScoreUDN').value;
-    const fGerente = document.getElementById('filtroScoreGerente').value;
-    const fJefe = document.getElementById('filtroScoreJefe').value;
-    const fAnio = document.getElementById('filtroScoreAnio').value;
-    const fMes = document.getElementById('filtroScoreMes').value;
-    const fSem = document.getElementById('filtroScoreSem').value;
-    const fDia = document.getElementById('filtroScoreDia').value;
-    const fCliente = document.getElementById('filtroScoreCliente').value;
-    const fOperador = document.getElementById('filtroScoreOperador').value.toUpperCase();
-    
-    datosScoreFiltrados = datosScoreSeg.filter(d => {
-        return (!fUdn || d.udn === fUdn) &&
-               (!fGerente || d.gerente === fGerente) &&
-               (!fJefe || d.jefe === fJefe) &&
-               (!fAnio || d.anio === fAnio) &&
-               (!fMes || d.mes === fMes) &&
-               (!fSem || d.sem === fSem) &&
-               (!fDia || d.dia === fDia) &&
-               (!fCliente || d.cliente === fCliente) &&
-               (!fOperador || d.operador.toUpperCase().includes(fOperador));
-    });
-    
-    console.log(`Filtrado: ${datosScoreFiltrados.length} de ${datosScoreSeg.length} registros`);
-    renderizarTablaScore();
-}
-
-function renderizarTablaScore(){
-    const tbody = document.getElementById('tablaScoreBody');
-    
-    if(datosScoreFiltrados.length === 0){
-        tbody.innerHTML = '<tr><td colspan="17" style="text-align:center;padding:30px;color:#6b7280;">No se encontraron registros con los filtros aplicados</td></tr>';
-        document.getElementById('contadorRegistros').innerText = '0';
-        return;
-    }
-    
-    let html = '';
-    datosScoreFiltrados.forEach(d => {
-        // Función para colorear celdas de eventos
-        const colorEvento = (val, tipo) => {
-            if(val === 0) return '';
-            if(tipo === 'crit') return 'class="evento-critico"';
-            if(tipo === 'mod') return 'class="evento-moderado"';
-            if(tipo === 'lev') return 'class="evento-leve"';
-            return '';
-        };
-        
-        // Color del score
-        let scoreClass = 'score-malo';
-        if(d.score >= 90) scoreClass = 'score-excelente';
-        else if(d.score >= 80) scoreClass = 'score-bueno';
-        else if(d.score >= 70) scoreClass = 'score-regular';
-        
-        html += `
-        <tr>
-            <td>${d.udn}</td>
-            <td style="font-weight:600;">${d.operador}</td>
-            <td>${d.cliente}</td>
-            <td ${colorEvento(d.critAcel, 'crit')}>${d.critAcel}</td>
-            <td ${colorEvento(d.critFreno, 'crit')}>${d.critFreno}</td>
-            <td ${colorEvento(d.critGiroD, 'crit')}>${d.critGiroD}</td>
-            <td ${colorEvento(d.critGiroI, 'crit')}>${d.critGiroI}</td>
-            <td ${colorEvento(d.critVeloc, 'crit')}>${d.critVeloc}</td>
-            <td ${colorEvento(d.modAcel, 'mod')}>${d.modAcel}</td>
-            <td ${colorEvento(d.modFreno, 'mod')}>${d.modFreno}</td>
-            <td ${colorEvento(d.modGiroD, 'mod')}>${d.modGiroD}</td>
-            <td ${colorEvento(d.modGiroI, 'mod')}>${d.modGiroI}</td>
-            <td ${colorEvento(d.modVeloc, 'mod')}>${d.modVeloc}</td>
-            <td ${colorEvento(d.levFreno, 'lev')}>${d.levFreno}</td>
-            <td ${colorEvento(d.levGiroD, 'lev')}>${d.levGiroD}</td>
-            <td ${colorEvento(d.levGiroI, 'lev')}>${d.levGiroI}</td>
-            <td ${colorEvento(d.levVeloc, 'lev')}>${d.levVeloc}</td>
-            <td class="${scoreClass}" style="font-weight:800;font-size:14px;">${d.score.toFixed(1)}</td>
-        </tr>`;
-    });
-    
-    tbody.innerHTML = html;
-    document.getElementById('contadorRegistros').innerText = datosScoreFiltrados.length.toLocaleString();
-}
-
-function limpiarFiltrosScore(){
-    document.getElementById('filtroScoreUDN').value = '';
-    document.getElementById('filtroScoreGerente').value = '';
-    document.getElementById('filtroScoreJefe').value = '';
-    document.getElementById('filtroScoreAnio').value = '';
-    document.getElementById('filtroScoreMes').value = '';
-    document.getElementById('filtroScoreSem').value = '';
-    document.getElementById('filtroScoreDia').value = '';
-    document.getElementById('filtroScoreCliente').value = '';
-    document.getElementById('filtroScoreOperador').value = '';
-    datosScoreFiltrados = [...datosScoreSeg];
-    renderizarTablaScore();
-}
-
-function exportarScoreExcel(){
-    if(datosScoreFiltrados.length === 0){
-        alert('No hay datos para exportar');
-        return;
-    }
-    
-    const fecha = new Date().toLocaleDateString('es-MX').replace(/\//g, '-');
-    
-    let csv = 'UDN,Operador,Cliente,';
-    csv += 'Acel Crit,Freno Crit,Giro D Crit,Giro I Crit,Veloc Crit,';
-    csv += 'Acel Mod,Freno Mod,Giro D Mod,Giro I Mod,Veloc Mod,';
-    csv += 'Freno Leve,Giro D Leve,Giro I Leve,Veloc Leve,Score\n';
-    
-    datosScoreFiltrados.forEach(d => {
-        csv += `"${d.udn}","${d.operador}","${d.cliente}",`;
-        csv += `${d.critAcel},${d.critFreno},${d.critGiroD},${d.critGiroI},${d.critVeloc},`;
-        csv += `${d.modAcel},${d.modFreno},${d.modGiroD},${d.modGiroI},${d.modVeloc},`;
-        csv += `${d.levFreno},${d.levGiroD},${d.levGiroI},${d.levVeloc},${d.score}\n`;
-    });
-    
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `Score_Seguridad_${fecha}.csv`;
-    link.click();
-}
-
-// Event Listeners
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('filtroScoreUDN').addEventListener('change', filtrarScoreSeg);
-    document.getElementById('filtroScoreGerente').addEventListener('change', filtrarScoreSeg);
-    document.getElementById('filtroScoreJefe').addEventListener('change', filtrarScoreSeg);
-    document.getElementById('filtroScoreAnio').addEventListener('change', filtrarScoreSeg);
-    document.getElementById('filtroScoreMes').addEventListener('change', filtrarScoreSeg);
-    document.getElementById('filtroScoreSem').addEventListener('change', filtrarScoreSeg);
-    document.getElementById('filtroScoreDia').addEventListener('change', filtrarScoreSeg);
-    document.getElementById('filtroScoreCliente').addEventListener('change', filtrarScoreSeg);
-    document.getElementById('filtroScoreOperador').addEventListener('input', filtrarScoreSeg);
-    
-    // Cargar datos iniciales
-    cargarScoreSeg();
 });
 </script>
 
