@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Flota Vehicular | Traxión</title>
 
+<!-- ================== CDN ================== -->
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
 <!-- ================== ESTILOS ================== -->
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -141,116 +144,340 @@ header h1{
     font-size:16px;
 }
 
-/* ===== EN CONSTRUCCIÓN ===== */
-.construccion-container{
+/* ===== BUSCADOR ===== */
+.search-bar{
     background:#ffffff;
     border:2px solid #e5e7eb;
-    border-radius:14px;
-    padding:80px 40px;
-    text-align:center;
-    margin-top:60px;
+    border-radius:12px;
+    padding:25px;
+    margin-bottom:20px;
 }
 
-.construccion-icon{
-    font-size:120px;
-    margin-bottom:30px;
-    animation:float 3s ease-in-out infinite;
+.search-container{
+    display:flex;
+    gap:15px;
+    align-items:center;
+    flex-wrap:wrap;
 }
 
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
-}
-
-.construccion-container h2{
-    color:#1f2937;
-    font-size:36px;
-    margin-bottom:15px;
-}
-
-.construccion-container p{
-    color:#6b7280;
-    font-size:18px;
-    margin-bottom:10px;
-    line-height:1.6;
-}
-
-.construccion-container .highlight{
-    color:#84cc16;
-    font-weight:700;
-}
-
-.feature-list{
-    display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
-    gap:20px;
-    margin-top:50px;
-    text-align:left;
-}
-
-.feature-card{
-    background:#f9fafb;
+.search-container input{
+    flex:1;
+    min-width:250px;
+    padding:12px 16px;
     border:2px solid #e5e7eb;
     border-radius:10px;
-    padding:25px;
-    transition:all 0.3s;
+    font-size:15px;
+    font-weight:600;
+    transition:border 0.3s;
 }
 
-.feature-card:hover{
-    transform:translateY(-5px);
-    box-shadow:0 8px 16px rgba(0,0,0,0.1);
+.search-container input:focus{
+    outline:none;
     border-color:#84cc16;
 }
 
-.feature-card h3{
+.search-container button{
+    padding:12px 24px;
+    background:#84cc16;
+    color:#1f2937;
+    border:none;
+    border-radius:10px;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    transition:all 0.3s;
+    box-shadow:0 2px 4px rgba(0,0,0,0.1);
+}
+
+.search-container button:hover{
+    background:#65a30d;
+    transform:translateY(-2px);
+    box-shadow:0 4px 8px rgba(0,0,0,0.15);
+}
+
+.search-result{
+    margin-top:20px;
+    padding:20px;
+    background:#f9fafb;
+    border-left:5px solid #84cc16;
+    border-radius:8px;
+    display:none;
+}
+
+.search-result.show{
+    display:block;
+}
+
+.search-result h3{
     color:#1f2937;
     font-size:18px;
-    margin-bottom:10px;
+    margin-bottom:12px;
+}
+
+.search-result-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+    gap:12px;
+}
+
+.search-result-item{
     display:flex;
-    align-items:center;
-    gap:10px;
+    flex-direction:column;
+    gap:4px;
 }
 
-.feature-card p{
+.search-result-label{
+    font-size:11px;
+    font-weight:700;
     color:#6b7280;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+}
+
+.search-result-value{
     font-size:14px;
-    margin:0;
+    font-weight:600;
+    color:#1f2937;
 }
 
-.progress-bar{
-    background:#e5e7eb;
-    height:8px;
-    border-radius:10px;
-    margin-top:40px;
-    overflow:hidden;
+/* ===== KPIs ===== */
+.kpi-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+    gap:18px;
+    margin-bottom:25px;
 }
 
-.progress-fill{
-    background:linear-gradient(90deg, #84cc16, #65a30d);
-    height:100%;
-    width:35%;
-    border-radius:10px;
-    animation:progress 2s ease-in-out;
+.kpi-card{
+    background:#ffffff;
+    border:2px solid #e5e7eb;
+    border-radius:12px;
+    padding:20px;
+    transition:transform 0.2s, box-shadow 0.2s;
+    cursor:pointer;
 }
 
-@keyframes progress {
-    from { width: 0%; }
-    to { width: 35%; }
+.kpi-card:hover{
+    transform:translateY(-2px);
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+}
+
+.kpi-card.total{
+    border-left:5px solid #3b82f6;
+}
+
+.kpi-card.operando{
+    border-left:5px solid #84cc16;
+}
+
+.kpi-card.mantenimiento{
+    border-left:5px solid #f59e0b;
+}
+
+.kpi-card.ineficiencias{
+    border-left:5px solid #ef4444;
+}
+
+.kpi-card.taller{
+    border-left:5px solid #8b5cf6;
+}
+
+.kpi-card.corralon{
+    border-left:5px solid #64748b;
+}
+
+.kpi-label{
+    font-size:11px;
+    font-weight:700;
+    color:#6b7280;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    margin-bottom:8px;
+}
+
+.kpi-value{
+    font-size:32px;
+    font-weight:800;
+    color:#1f2937;
+    margin:8px 0;
+}
+
+.kpi-value.total{
+    color:#3b82f6;
+}
+
+.kpi-value.operando{
+    color:#84cc16;
+}
+
+.kpi-value.mantenimiento{
+    color:#f59e0b;
+}
+
+.kpi-value.ineficiencias{
+    color:#ef4444;
+}
+
+.kpi-value.taller{
+    color:#8b5cf6;
+}
+
+.kpi-value.corralon{
+    color:#64748b;
+}
+
+.kpi-subvalue{
+    font-size:12px;
+    color:#9ca3af;
+    margin-top:6px;
+    line-height:1.4;
+}
+
+/* ===== TABLA ===== */
+.table-container{
+    background:#ffffff;
+    border:2px solid #e5e7eb;
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:25px;
+}
+
+.table-container h3{
+    font-size:18px;
+    font-weight:700;
+    margin-bottom:15px;
+    color:#1f2937;
+    padding-bottom:10px;
+    border-bottom:2px solid #84cc16;
+}
+
+.table-filters{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+    gap:10px;
+    margin-bottom:15px;
+}
+
+.table-filters input,
+.table-filters select{
+    padding:10px 14px;
+    border:2px solid #e5e7eb;
+    border-radius:8px;
+    font-size:14px;
+    transition:border 0.3s;
+}
+
+.table-filters input:focus,
+.table-filters select:focus{
+    outline:none;
+    border-color:#84cc16;
+}
+
+.table-actions{
+    display:flex;
+    gap:10px;
+    margin-bottom:15px;
+    flex-wrap:wrap;
+}
+
+.table-actions button{
+    padding:10px 18px;
+    background:#374151;
+    color:#e5e7eb;
+    border:none;
+    border-radius:8px;
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+    transition:all 0.3s;
+}
+
+.table-actions button:hover{
+    background:#4b5563;
+}
+
+.table-actions button.export{
+    background:#84cc16;
+    color:#1f2937;
+}
+
+.table-actions button.export:hover{
+    background:#65a30d;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+}
+
+th,td{
+    padding:12px 10px;
+    text-align:left;
+    border-bottom:1px solid #e5e7eb;
+}
+
+th{
+    background:#f9fafb;
+    font-weight:700;
+    color:#374151;
+    position:sticky;
+    top:0;
+}
+
+tr:hover{
+    background:#f9fafb;
 }
 
 .status-badge{
     display:inline-block;
+    padding:4px 10px;
+    border-radius:12px;
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+}
+
+.status-operando{
+    background:#d1fae5;
+    color:#065f46;
+}
+
+.status-mantenimiento{
     background:#fef3c7;
     color:#92400e;
-    padding:8px 20px;
-    border-radius:20px;
-    font-weight:700;
-    font-size:14px;
-    margin-top:20px;
+}
+
+.status-ineficiencias{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.status-taller{
+    background:#ede9fe;
+    color:#5b21b6;
+}
+
+.status-corralon{
+    background:#e2e8f0;
+    color:#1e293b;
+}
+
+.table-scroll{
+    overflow-x:auto;
+    max-height:600px;
+    overflow-y:auto;
+}
+
+@media (max-width: 1024px){
+    .kpi-grid{
+        grid-template-columns:repeat(2, 1fr);
+    }
 }
 
 @media (max-width: 640px){
     nav{
+        flex-wrap:wrap;
         gap:10px;
     }
     .content{
@@ -262,17 +489,18 @@ header h1{
     header h1{
         font-size:24px;
     }
-    .construccion-container{
-        padding:40px 20px;
+    .kpi-grid{
+        grid-template-columns:1fr;
     }
-    .construccion-icon{
-        font-size:80px;
-    }
-    .construccion-container h2{
+    .kpi-value{
         font-size:28px;
     }
-    .construccion-container p{
-        font-size:16px;
+    .search-container{
+        flex-direction:column;
+    }
+    .search-container input,
+    .search-container button{
+        width:100%;
     }
 }
 </style>
@@ -313,53 +541,114 @@ header h1{
 
     <header>
         <h1>Dashboard de Flota Vehicular</h1>
-        <p class="subtitle">Gestión y monitoreo integral de vehículos</p>
+        <p class="subtitle" id="headerSubtitle">Gestión y monitoreo integral de vehículos</p>
     </header>
 
-    <div class="construccion-container">
-        <div class="construccion-icon">🚗</div>
+    <!-- BUSCADOR POR VEHICLE ID -->
+    <div class="search-bar">
+        <h3 style="margin-bottom:15px;color:#1f2937;font-size:16px;">🔍 Buscar Vehículo por ID</h3>
+        <div class="search-container">
+            <input type="text" id="searchVehicleId" placeholder="Ingresa el Vehicle ID (ejemplo: 5002, 6815, 13872)">
+            <button onclick="buscarVehiculo()">🔎 Buscar</button>
+        </div>
         
-        <h2>Sección en Construcción</h2>
-        
-        <p>Estamos trabajando en traerte el mejor dashboard de <span class="highlight">Flota Vehicular</span></p>
-        <p>Pronto podrás gestionar y monitorear todos tus vehículos desde aquí</p>
-        
-        <div class="status-badge">⚙️ En Desarrollo - 35% Completado</div>
-        
-        <div class="progress-bar">
-            <div class="progress-fill"></div>
+        <div class="search-result" id="searchResult">
+            <h3>📋 Información del Vehículo</h3>
+            <div class="search-result-grid" id="searchResultContent"></div>
+        </div>
+    </div>
+
+    <!-- KPIs DE ESTATUS AGRUPADO -->
+    <div class="kpi-grid">
+        <div class="kpi-card total" onclick="filtrarPorEstatus('TODOS')">
+            <div class="kpi-label">🚗 Total de Vehículos</div>
+            <div class="kpi-value total" id="kpiTotal">0</div>
+            <div class="kpi-subvalue">Flota completa</div>
         </div>
 
-        <div class="feature-list">
-            <div class="feature-card">
-                <h3>📊 <span>KPIs en Tiempo Real</span></h3>
-                <p>Monitorea los indicadores clave de nivel de servicio actualizados en tiempo real</p>
-            </div>
+        <div class="kpi-card operando" onclick="filtrarPorEstatus('Operando')">
+            <div class="kpi-label">✅ Operando</div>
+            <div class="kpi-value operando" id="kpiOperando">0</div>
+            <div class="kpi-subvalue" id="pctOperando">0% del total</div>
+        </div>
 
-            <div class="feature-card">
-                <h3>⏱️ <span>Tiempos de Entrega</span></h3>
-                <p>Analiza y da seguimiento a los tiempos de entrega comprometidos vs reales</p>
-            </div>
+        <div class="kpi-card mantenimiento" onclick="filtrarPorEstatus('Mantenimiento')">
+            <div class="kpi-label">🔧 Mantenimiento</div>
+            <div class="kpi-value mantenimiento" id="kpiMantenimiento">0</div>
+            <div class="kpi-subvalue" id="pctMantenimiento">0% del total</div>
+        </div>
 
-            <div class="feature-card">
-                <h3>✅ <span>Cumplimiento</span></h3>
-                <p>Visualiza el porcentaje de cumplimiento por cliente, ruta y periodo</p>
-            </div>
+        <div class="kpi-card ineficiencias" onclick="filtrarPorEstatus('Ineficiencias')">
+            <div class="kpi-label">⚠️ Ineficiencias</div>
+            <div class="kpi-value ineficiencias" id="kpiIneficiencias">0</div>
+            <div class="kpi-subvalue" id="pctIneficiencias">0% del total</div>
+        </div>
 
-            <div class="feature-card">
-                <h3>📅 <span>Entregas a Tiempo</span></h3>
-                <p>Seguimiento detallado de entregas puntuales y fuera de tiempo</p>
-            </div>
+        <div class="kpi-card taller" onclick="filtrarPorEstatus('Taller Externo')">
+            <div class="kpi-label">🏭 Taller Externo</div>
+            <div class="kpi-value taller" id="kpiTaller">0</div>
+            <div class="kpi-subvalue" id="pctTaller">0% del total</div>
+        </div>
 
-            <div class="feature-card">
-                <h3>🎯 <span>Metas y Objetivos</span></h3>
-                <p>Compara el desempeño actual contra las metas establecidas por cliente</p>
-            </div>
+        <div class="kpi-card corralon" onclick="filtrarPorEstatus('Corralon')">
+            <div class="kpi-label">🅿️ Corralón</div>
+            <div class="kpi-value corralon" id="kpiCorralon">0</div>
+            <div class="kpi-subvalue" id="pctCorralon">0% del total</div>
+        </div>
+    </div>
 
-            <div class="feature-card">
-                <h3>📉 <span>Análisis de Incidencias</span></h3>
-                <p>Identifica patrones y causas de incumplimiento en el nivel de servicio</p>
-            </div>
+    <!-- TABLA DE DETALLE -->
+    <div class="table-container">
+        <h3>📊 Detalle de Vehículos</h3>
+        
+        <div class="table-filters">
+            <input type="text" id="filtroVehicleId" placeholder="🔍 Filtrar por Vehicle ID">
+            <input type="text" id="filtroCliente" placeholder="🔍 Filtrar por Cliente">
+            <input type="text" id="filtroMarca" placeholder="🔍 Filtrar por Marca">
+            <input type="text" id="filtroModelo" placeholder="🔍 Filtrar por Modelo">
+            <select id="filtroStatus">
+                <option value="">Todos los Status</option>
+                <option value="Operando">Operando</option>
+                <option value="Mantenimiento">Mantenimiento</option>
+                <option value="Ineficiencias">Ineficiencias</option>
+                <option value="Taller Externo">Taller Externo</option>
+                <option value="Corralon">Corralón</option>
+            </select>
+            <select id="filtroUso">
+                <option value="">Todos los Usos</option>
+                <option value="Operaciones">Operaciones</option>
+                <option value="Soporte">Soporte</option>
+            </select>
+        </div>
+
+        <div class="table-actions">
+            <button onclick="limpiarFiltros()">🗑️ Limpiar Filtros</button>
+            <button class="export" onclick="exportarExcel()">📥 Exportar a Excel</button>
+        </div>
+
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Vehicle ID</th>
+                        <th>Cliente</th>
+                        <th>Comentario</th>
+                        <th>Número de Chasis</th>
+                        <th>Marca</th>
+                        <th>Modelo</th>
+                        <th>Año</th>
+                        <th>Uso</th>
+                        <th>Status</th>
+                        <th>Estatus Agrupado</th>
+                        <th>Aire Acondicionado</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaDetalle"></tbody>
+            </table>
+        </div>
+        
+        <div style="margin-top:15px;padding:12px;background:#f9fafb;border-radius:8px;font-size:13px;color:#6b7280;">
+            <strong>Total de registros:</strong> <span id="totalRegistros">0</span> vehículos
         </div>
     </div>
 
@@ -367,28 +656,354 @@ header h1{
 
 <!-- ================== JAVASCRIPT ================== -->
 <script>
+// ===== CONFIGURACIÓN =====
+const SHEET_ID = "1l3QYg7N050BScrtNhKkHQ-hHNDgaK9Prw95Dzb2-DRE";
+const SHEET_NAME = "FlotaVeh";
+
+// Mapeo de status a estatus agrupado (según la imagen que compartiste)
+const STATUS_MAPPING = {
+    "Operando": "Operando",
+    "Mantenimiento": "Mantenimiento",
+    "Alto Rezago Mantenimiento": "Mantenimiento",
+    "Ineficiencias": "Ineficiencias",
+    "Taller Externo": "Taller Externo",
+    "Corralon Grave": "Corralon",
+    "Corralon Media": "Corralon"
+};
+
+let todosLosVehiculos = [];
+let vehiculosFiltrados = [];
+
+// ===== FUNCIONES DE CARGA DE DATOS =====
+async function cargarDatos(){
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=${SHEET_NAME}`;
+    const res = await fetch(url);
+    const csv = await res.text();
+    return new Promise(r=>{
+        Papa.parse(csv,{header:false,skipEmptyLines:true,complete:x=>r(x.data)});
+    });
+}
+
+async function actualizar(){
+    console.log('🔄 Cargando datos de la flota...');
+    const rows = await cargarDatos();
+    console.log(`📄 Filas cargadas: ${rows.length}`);
+    
+    // Resetear contadores
+    let total = 0;
+    let contadores = {
+        "Operando": 0,
+        "Mantenimiento": 0,
+        "Ineficiencias": 0,
+        "Taller Externo": 0,
+        "Corralon": 0
+    };
+    
+    todosLosVehiculos = [];
+    
+    // Procesar datos (empezar desde fila 1 para saltar headers)
+    for(let i = 1; i < rows.length; i++){
+        const r = rows[i];
+        if(!r || r.length < 11) continue;
+        
+        const vehicleId = (r[0]||"").toString().trim();
+        const cliente = (r[1]||"").toString().trim();
+        const comentario = (r[2]||"").toString().trim();
+        const numChasis = (r[3]||"").toString().trim();
+        const marca = (r[4]||"").toString().trim();
+        const modelo = (r[5]||"").toString().trim();
+        const anio = (r[6]||"").toString().trim();
+        const uso = (r[7]||"").toString().trim();
+        const status = (r[8]||"").toString().trim();
+        const aireAcondicionado = (r[9]||"").toString().trim();
+        
+        // Obtener estatus agrupado
+        const estatusAgrupado = STATUS_MAPPING[status] || status;
+        
+        // Solo contar si tiene Vehicle ID válido
+        if(vehicleId && vehicleId !== "" && vehicleId !== "-"){
+            total++;
+            
+            // Contar por estatus agrupado
+            if(contadores[estatusAgrupado] !== undefined){
+                contadores[estatusAgrupado]++;
+            }
+            
+            todosLosVehiculos.push({
+                vehicleId,
+                cliente,
+                comentario,
+                numChasis,
+                marca,
+                modelo,
+                anio,
+                uso,
+                status,
+                estatusAgrupado,
+                aireAcondicionado
+            });
+        }
+    }
+    
+    console.log('📊 Datos procesados:');
+    console.log('Total:', total);
+    console.log('Contadores:', contadores);
+    
+    // Actualizar KPIs
+    document.getElementById('kpiTotal').innerText = total;
+    document.getElementById('kpiOperando').innerText = contadores["Operando"];
+    document.getElementById('kpiMantenimiento').innerText = contadores["Mantenimiento"];
+    document.getElementById('kpiIneficiencias').innerText = contadores["Ineficiencias"];
+    document.getElementById('kpiTaller').innerText = contadores["Taller Externo"];
+    document.getElementById('kpiCorralon').innerText = contadores["Corralon"];
+    
+    // Actualizar porcentajes
+    const calcPct = (valor) => total > 0 ? ((valor/total)*100).toFixed(1) : 0;
+    document.getElementById('pctOperando').innerText = calcPct(contadores["Operando"]) + "% del total";
+    document.getElementById('pctMantenimiento').innerText = calcPct(contadores["Mantenimiento"]) + "% del total";
+    document.getElementById('pctIneficiencias').innerText = calcPct(contadores["Ineficiencias"]) + "% del total";
+    document.getElementById('pctTaller').innerText = calcPct(contadores["Taller Externo"]) + "% del total";
+    document.getElementById('pctCorralon').innerText = calcPct(contadores["Corralon"]) + "% del total";
+    
+    // Actualizar subtítulo
+    document.getElementById('headerSubtitle').innerText = `${total} vehículos registrados en la flota`;
+    
+    // Renderizar tabla completa
+    vehiculosFiltrados = [...todosLosVehiculos];
+    renderizarTabla(vehiculosFiltrados);
+}
+
+// ===== FUNCIONES DE RENDERIZADO =====
+function renderizarTabla(vehiculos){
+    const tbody = document.getElementById('tablaDetalle');
+    
+    if(vehiculos.length === 0){
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:30px;color:#6b7280;">No se encontraron vehículos con los filtros aplicados</td></tr>';
+        document.getElementById('totalRegistros').innerText = '0';
+        return;
+    }
+    
+    let html = '';
+    vehiculos.forEach(v => {
+        const statusClass = getStatusClass(v.estatusAgrupado);
+        
+        html += `
+        <tr>
+            <td style="font-weight:700;color:#3b82f6;">${v.vehicleId}</td>
+            <td>${v.cliente || '-'}</td>
+            <td>${v.comentario || '-'}</td>
+            <td style="font-size:11px;color:#6b7280;">${v.numChasis || '-'}</td>
+            <td><strong>${v.marca || '-'}</strong></td>
+            <td>${v.modelo || '-'}</td>
+            <td style="text-align:center;">${v.anio || '-'}</td>
+            <td>${v.uso || '-'}</td>
+            <td>${v.status || '-'}</td>
+            <td><span class="status-badge ${statusClass}">${v.estatusAgrupado}</span></td>
+            <td style="text-align:center;">${v.aireAcondicionado || '-'}</td>
+        </tr>`;
+    });
+    
+    tbody.innerHTML = html;
+    document.getElementById('totalRegistros').innerText = vehiculos.length;
+}
+
+function getStatusClass(estatusAgrupado){
+    const mapping = {
+        "Operando": "status-operando",
+        "Mantenimiento": "status-mantenimiento",
+        "Ineficiencias": "status-ineficiencias",
+        "Taller Externo": "status-taller",
+        "Corralon": "status-corralon"
+    };
+    return mapping[estatusAgrupado] || "";
+}
+
+// ===== FUNCIONES DE FILTRADO =====
+function aplicarFiltros(){
+    const filtroVehicleId = document.getElementById('filtroVehicleId').value.toUpperCase();
+    const filtroCliente = document.getElementById('filtroCliente').value.toUpperCase();
+    const filtroMarca = document.getElementById('filtroMarca').value.toUpperCase();
+    const filtroModelo = document.getElementById('filtroModelo').value.toUpperCase();
+    const filtroStatus = document.getElementById('filtroStatus').value;
+    const filtroUso = document.getElementById('filtroUso').value;
+    
+    vehiculosFiltrados = todosLosVehiculos.filter(v => {
+        const coincideVehicleId = !filtroVehicleId || v.vehicleId.toUpperCase().includes(filtroVehicleId);
+        const coincideCliente = !filtroCliente || v.cliente.toUpperCase().includes(filtroCliente);
+        const coincideMarca = !filtroMarca || v.marca.toUpperCase().includes(filtroMarca);
+        const coincideModelo = !filtroModelo || v.modelo.toUpperCase().includes(filtroModelo);
+        const coincideStatus = !filtroStatus || v.estatusAgrupado === filtroStatus;
+        const coincideUso = !filtroUso || v.uso === filtroUso;
+        
+        return coincideVehicleId && coincideCliente && coincideMarca && 
+               coincideModelo && coincideStatus && coincideUso;
+    });
+    
+    renderizarTabla(vehiculosFiltrados);
+}
+
+function filtrarPorEstatus(estatus){
+    if(estatus === 'TODOS'){
+        document.getElementById('filtroStatus').value = '';
+    } else {
+        document.getElementById('filtroStatus').value = estatus;
+    }
+    aplicarFiltros();
+}
+
+function limpiarFiltros(){
+    document.getElementById('filtroVehicleId').value = '';
+    document.getElementById('filtroCliente').value = '';
+    document.getElementById('filtroMarca').value = '';
+    document.getElementById('filtroModelo').value = '';
+    document.getElementById('filtroStatus').value = '';
+    document.getElementById('filtroUso').value = '';
+    
+    vehiculosFiltrados = [...todosLosVehiculos];
+    renderizarTabla(vehiculosFiltrados);
+}
+
+// ===== FUNCIÓN DE BÚSQUEDA POR VEHICLE ID =====
+function buscarVehiculo(){
+    const searchId = document.getElementById('searchVehicleId').value.trim().toUpperCase();
+    
+    if(!searchId){
+        alert('Por favor ingresa un Vehicle ID para buscar');
+        return;
+    }
+    
+    const vehiculo = todosLosVehiculos.find(v => v.vehicleId.toUpperCase() === searchId);
+    
+    const resultDiv = document.getElementById('searchResult');
+    const contentDiv = document.getElementById('searchResultContent');
+    
+    if(vehiculo){
+        const statusClass = getStatusClass(vehiculo.estatusAgrupado);
+        
+        contentDiv.innerHTML = `
+            <div class="search-result-item">
+                <div class="search-result-label">Vehicle ID</div>
+                <div class="search-result-value" style="color:#3b82f6;font-size:18px;">${vehiculo.vehicleId}</div>
+            </div>
+            <div class="search-result-item">
+                <div class="search-result-label">Cliente</div>
+                <div class="search-result-value">${vehiculo.cliente || '-'}</div>
+            </div>
+            <div class="search-result-item">
+                <div class="search-result-label">Marca</div>
+                <div class="search-result-value">${vehiculo.marca || '-'}</div>
+            </div>
+            <div class="search-result-item">
+                <div class="search-result-label">Modelo</div>
+                <div class="search-result-value">${vehiculo.modelo || '-'}</div>
+            </div>
+            <div class="search-result-item">
+                <div class="search-result-label">Año</div>
+                <div class="search-result-value">${vehiculo.anio || '-'}</div>
+            </div>
+            <div class="search-result-item">
+                <div class="search-result-label">Uso</div>
+                <div class="search-result-value">${vehiculo.uso || '-'}</div>
+            </div>
+            <div class="search-result-item">
+                <div class="search-result-label">Status</div>
+                <div class="search-result-value">${vehiculo.status || '-'}</div>
+            </div>
+            <div class="search-result-item">
+                <div class="search-result-label">Estatus Agrupado</div>
+                <div class="search-result-value"><span class="status-badge ${statusClass}">${vehiculo.estatusAgrupado}</span></div>
+            </div>
+            <div class="search-result-item">
+                <div class="search-result-label">Aire Acondicionado</div>
+                <div class="search-result-value">${vehiculo.aireAcondicionado || '-'}</div>
+            </div>
+            <div class="search-result-item">
+                <div class="search-result-label">Número de Chasis</div>
+                <div class="search-result-value" style="font-size:12px;">${vehiculo.numChasis || '-'}</div>
+            </div>
+            <div class="search-result-item">
+                <div class="search-result-label">Comentario</div>
+                <div class="search-result-value" style="font-size:12px;">${vehiculo.comentario || '-'}</div>
+            </div>
+        `;
+        
+        resultDiv.classList.add('show');
+    } else {
+        contentDiv.innerHTML = `
+            <div style="text-align:center;padding:20px;width:100%;">
+                <div style="font-size:48px;margin-bottom:10px;">❌</div>
+                <div style="color:#6b7280;font-size:14px;">No se encontró ningún vehículo con el ID: <strong>${searchId}</strong></div>
+            </div>
+        `;
+        resultDiv.classList.add('show');
+    }
+}
+
+// Permitir búsqueda con Enter
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('searchVehicleId').addEventListener('keypress', function(e){
+        if(e.key === 'Enter'){
+            buscarVehiculo();
+        }
+    });
+});
+
+// ===== FUNCIÓN DE EXPORTACIÓN =====
+function exportarExcel(){
+    if(vehiculosFiltrados.length === 0){
+        alert('No hay datos para exportar');
+        return;
+    }
+    
+    const fecha = new Date().toLocaleDateString('es-MX').replace(/\//g,'-');
+    
+    let csv = 'Vehicle ID,Cliente,Comentario,Número de Chasis,Marca,Modelo,Año,Uso,Status,Estatus Agrupado,Aire Acondicionado\n';
+    
+    vehiculosFiltrados.forEach(v => {
+        csv += `"${v.vehicleId}","${v.cliente}","${v.comentario}","${v.numChasis}","${v.marca}","${v.modelo}","${v.anio}","${v.uso}","${v.status}","${v.estatusAgrupado}","${v.aireAcondicionado}"\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `Flota_Vehicular_${fecha}.csv`;
+    link.click();
+}
+
+// ===== MENÚ DROPDOWN =====
 function toggleDropdown(dropdownId) {
     const dropdown = document.getElementById(dropdownId);
     const allDropdowns = document.querySelectorAll('.dropdown');
     
-    // Cerrar todos los demás dropdowns
     allDropdowns.forEach(d => {
         if (d.id !== dropdownId) {
             d.classList.remove('open');
         }
     });
     
-    // Toggle el dropdown actual
     dropdown.classList.toggle('open');
 }
 
-// Cerrar dropdowns al hacer click fuera
 document.addEventListener('click', function(event) {
     if (!event.target.closest('.dropdown')) {
         document.querySelectorAll('.dropdown').forEach(d => {
             d.classList.remove('open');
         });
     }
+});
+
+// ===== EVENT LISTENERS =====
+document.addEventListener('DOMContentLoaded', () => {
+    // Filtros
+    document.getElementById('filtroVehicleId').addEventListener('input', aplicarFiltros);
+    document.getElementById('filtroCliente').addEventListener('input', aplicarFiltros);
+    document.getElementById('filtroMarca').addEventListener('input', aplicarFiltros);
+    document.getElementById('filtroModelo').addEventListener('input', aplicarFiltros);
+    document.getElementById('filtroStatus').addEventListener('change', aplicarFiltros);
+    document.getElementById('filtroUso').addEventListener('change', aplicarFiltros);
+    
+    // Cargar datos iniciales
+    actualizar();
 });
 </script>
 
